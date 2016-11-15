@@ -1,0 +1,10 @@
+starter:
+  container_name: starter
+  image: hyperledger/fabric-starter-kit
+  volumes:
+   - ~/mytest:/user/mytest
+  environment:
+   - KEY_VALUE_STORE=/tmp/hl_sdk_node_key_value_stroe
+   - DEPLOY_MODE=net
+  stdin_open: true
+  tty: true
