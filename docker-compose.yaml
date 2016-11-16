@@ -89,13 +89,15 @@ mystarter1:
  environment:
    - MEMBERSRVC_ADDRESS=mymembersrvc:7054
    - PEER_ADDRESS=vp0:7051
+   - CORE_CHAINCODE_ID_NAME=mycc
+   - CORE_PEER_ADDRESS=vp0:7051
    - USER_NAME=lukas
-   - USER_PASSWORD=NPKYL39ukbkj
+   - USER_PASSWORD=NPKYL39uKbkj 
  links:
    - mymembersrvc
    - vp0
 
-mystarter2:
+mystarter3:
  extends:
   file: starter.yaml
   service: starter
@@ -104,13 +106,10 @@ mystarter2:
  environment:
    - MEMBERSRVC_ADDRESS=mymembersrvc:7054
    - PEER_ADDRESS=vp3:7051
-   - USER_NAME=diego
-   - USER_PASSWORD=DRJ23pEQl16a
+   - CORE_PEER_ADDRESS=vp3:7051
+   - USER_NAME= binhn
+   - USER_PASSWORD=7avZQLwcUe9q
  links:
    - mymembersrvc
    - vp3
-
-
-
-
 

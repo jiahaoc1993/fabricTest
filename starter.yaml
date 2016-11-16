@@ -6,5 +6,6 @@ starter:
   environment:
    - KEY_VALUE_STORE=/tmp/hl_sdk_node_key_value_stroe
    - DEPLOY_MODE=net
+#  command: sh -c "sleep 20; /opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02/chaincode_example02"
   stdin_open: true
   tty: true
