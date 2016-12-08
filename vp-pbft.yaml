@@ -1,7 +1,10 @@
 vp-pbft:
  image: hyperledger/fabric-peer
  environment:
-  - CORE_PEER_ADDRESSAUTODETECT=true
+  - CORE_CLI_ADDRESS=172.22.28.130:7052
+  - CORE_REST_ADDRESS=172.22.28.130:7050
+  - CORE_PEER_LISTENADDRESS=172.22.28.130:7051
+  - CORE_PEER_ADDRESS=172.22.28.130:7051
   - CORE_PEER_VALIDATOR_CONSENSUS_PLUGIN=pbft
   - CORE_SECURITY_ENABLED=true
   - CORE_PBFT_GENERAL_MODE=batch
@@ -15,10 +18,11 @@ vp-pbft:
   - CORE_PBFT_GENERAL_TIMEOUT_RESENDVIEWCHANGE=2s
   - CORE_PBFT_GENERAL_TIMEOUT_NULLREQUEST=0s
   - CORE_PBFT_GENERAL_TIMEOUT_BROADCAST=1s
- expose:
-   - "7051"
-   - "7052"
-   - "7053"
+ ports:
+   - "7050:7050"
+   - "7051:7051"
+   - "7052:7052"
+   - "7053:7053"
  volumes:
     - /var/run/docker.sock:/var/run/docker.sock
 
