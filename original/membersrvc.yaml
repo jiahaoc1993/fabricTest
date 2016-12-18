@@ -1,0 +1,7 @@
+membersrvc:
+  image: hyperledger/fabric-membersrvc
+  expose:
+    - "7054"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  command : membersrvc
