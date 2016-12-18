@@ -12,18 +12,11 @@ const (
     port string = "7050"
 )
 
-func GetdMessage() {
-    args := os.Args[1:]
-    if len(args) == 1 {
-        
-    }
-}
-
 
 func main() {
-    SendMessage()
+    arg := os.Args[1]
     addr := url + ":" + port
-    resp, err := http.Get(addr+"/chain/blocks/0")
+    resp, err := http.Get(addr+arg)
     if err != nil {
         fmt.Printf("Error: %v", err)
         os.Exit(1)
