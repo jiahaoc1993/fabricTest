@@ -5,6 +5,7 @@ import (
     "net/http"
     "os"
     "io/ioutil"
+    "encoding/json"
 )
 
 const (
@@ -12,22 +13,57 @@ const (
     port string = "7050"
 )
 
+type transmit struct {
+    Jsonrpc string      `json:"jsonrpc"`
+    Method  string      `json:"method"`
+    Params  map[string]interface{}  `json:"params"`
+    Id      int         `json:'id'`
+}
+
+
+func Get(s string) error {
+    resp, err := http.Get(s)
+    if err != nil {
+        fmt.Printf("Error: %v", err)
+        return err
+    }
+    b, err := ioutil.ReadAll(resp.Body)
+    defer resp.Body.Close()
+    if err != nil {
+        fmt.Printf("Error: %v", err)
+        return err
+    }
+    fmt.Printf("Message : %s", b)
+    return nil
+
+}
+
+func Post(){
+    t := &transmit{
+        "2.0",
+        "deploy",
+        map[string]interface{}{"abc" : "123","cba" : 123},
+        123,
+    }
+    b, err := json.Marshal(t)
+    if err != nil {
+        fmt.Printf("error raise: %v", err)
+    }
+    fmt.Println(b)
+    fmt.Println(string(b))
+}
+
 
 func main() {
     arg := os.Args[1]
-    addr := url + ":" + port
-    resp, err := http.Get(addr+arg)
-    if err != nil {
-        fmt.Printf("Error: %v", err)
-        os.Exit(1)
+    if arg != "post" {
+        addr := url + ":" + port
+        err := Get(addr+arg)
+        if err != nil {
+            fmt.Printf("error raised")
+        }
     }
-    b, err := ioutil.ReadAll(resp.Body)
-    resp.Body.Close()
-    if err != nil {
-        fmt.Printf("Error: %v", err)
-        os.Exit(1)
-    }
-    fmt.Printf("Message : %s", b)
-}
+    Post()
 
+}
 
