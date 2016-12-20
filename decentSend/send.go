@@ -54,7 +54,8 @@ func Post(){
     if err != nil {
         fmt.Println("error raise; %v", err)
     }
-    fmt.Println(res)
+    body, _ := ioutil.ReadAll(res.Body)
+    fmt.Println(string(body))
 }
 
 
