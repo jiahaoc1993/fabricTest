@@ -6,6 +6,7 @@ import (
     "os"
     "io/ioutil"
     "encoding/json"
+    "bytes"
 )
 
 const (
@@ -49,8 +50,11 @@ func Post(){
     if err != nil {
         fmt.Printf("error raise: %v", err)
     }
-    fmt.Println(b)
-    fmt.Println(string(b))
+    res, err := http.Post("http://172.22.28.130:7050/registrar", "application/json", bytes.NewBuffer(b))
+    if err != nil {
+        fmt.Println("error raise; %v", err)
+    }
+    fmt.Println(res)
 }
 
 
