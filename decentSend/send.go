@@ -39,7 +39,21 @@ func Get(s string) error {
 
 }
 
-func Post(){
+func Register(){
+    loginInfo := []byte(`{
+        "enrollId" : "jim",
+        "enrollSecret" : "abcdefg"
+    }`)
+    res, err := http.Post("http://172.22.28.130:7050/registrar", "application/json", bytes.NewBuffer(loginInfo))
+    if err != nil {
+        fmt.Printf("Error raised: %v", err)
+    }
+
+}
+
+
+
+func Deploy(){
     t := &transmit{
         "2.0",
         "deploy",
@@ -71,7 +85,6 @@ func main() {
             fmt.Printf("error raised")
         }
     }
-    Post()
 
 }
 
