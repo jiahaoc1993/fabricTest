@@ -11,7 +11,7 @@ import (
 
 const (
     url string = "http://172.22.28.118"
-    port string = "7050"
+    port string = "7051"
 )
 
 type transmit struct {
@@ -43,14 +43,17 @@ func Post(){
     t := &transmit{
         "2.0",
         "deploy",
-        map[string]interface{}{"abc" : "123","cba" : 123},
-        123,
+        map[string]interface{}{
+            "chaincodeID" : map[string]interface{}{"path": "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"},
+            "ctorMsg" : map[string]interface{}{"function" : "deploy","args": []string{"a", "10000", "b", "1 00"}},
+            "secureContext" : "lukas"},
+        1,
     }
     b, err := json.Marshal(t)
     if err != nil {
         fmt.Printf("error raise: %v", err)
     }
-    res, err := http.Post("http://172.22.28.130:7050/registrar", "application/json", bytes.NewBuffer(b))
+    res, err := http.Post("http://172.22.28.130:7050/chaincode", "application/json", bytes.NewBuffer(b))
     if err != nil {
         fmt.Println("error raise; %v", err)
     }
