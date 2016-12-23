@@ -78,13 +78,10 @@ func Deploy(){
 
 func main() {
     arg := os.Args[1]
-    if arg != "post" {
-        addr := url + ":" + port
-        err := Get(addr+arg)
-        if err != nil {
-            fmt.Printf("error raised")
-        }
+    switch arg {
+    case "register": Register()
+    case "deploy"  : Deploy()
+    default : fmt.Println("use deploy/register")
     }
-    Register()
 }
 
