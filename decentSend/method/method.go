@@ -48,7 +48,7 @@ func RandomId() int{
 func Register(){
     loginInfo := []byte(`{
         "enrollId" : "jim",
-        "enrollSecret" : "abcdefg"
+        "enrollSecret" : "6avZQLwcUe9b"
     }`)
     res, err := http.Post(addr+"/registrar", "application/json", bytes.NewBuffer(loginInfo))
     if err != nil {
@@ -100,7 +100,7 @@ func Invoke(){
     fmt.Println(string(body))
 }
 
-func Query(){
+func Query() bool {
     t := &transmit{
         "2.0",
         "query",
