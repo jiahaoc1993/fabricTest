@@ -92,12 +92,30 @@ func Invoke(){
     fmt.Println(string(body))
 }
 
+func Query(){
+    t := &transmit{
+        "2.0",
+        "query",
+        map[string]interface{}{"chaincodeId" : map[string]interface{}{"name":"123"},"ctorMsg":map[string]interface{}{"function" : "query", "args" : []string{"a"}},"secureContext":"jim"},3}
+    b, err := json.Marshal(t)
+    if err != nil {
+        fmt.Println("error raised: %v", err)
+    }
+    resp, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
+    if err != nil {
+        fmt.Println("error raised: %v", err)
+    }
+    body, _ := ioutil.ReadAll(resp.Body)
+    fmt.Println(string(body))
+}
+
 func main() {
     arg := os.Args[1]
     switch arg {
     case "register": Register()
     case "deploy"  : Deploy()
     case "invoke"  : Invoke()
+    case "query"   : Query()
     default : fmt.Println("use deploy/register")
     }
 }
