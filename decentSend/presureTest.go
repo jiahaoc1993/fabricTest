@@ -8,9 +8,9 @@ import (
 )
 
 func test(c chan int){
-    method.Register()
-    method.Deploy()
-    method.Invoke()
+    //method.Register()
+    //method.Deploy()
+    //method.Invoke()
     method.Query()
     c <- 1
 }
