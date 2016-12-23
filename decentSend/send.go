@@ -10,8 +10,7 @@ import (
 )
 
 const (
-    url string = "http://172.22.28.118"
-    port string = "7051"
+    addr string = "http://172.22.28.118:7050"
 )
 
 type transmit struct {
@@ -36,7 +35,6 @@ func Get(s string) error {
     }
     fmt.Printf("Message : %s", b)
     return nil
-
 }
 
 func Register(){
@@ -44,14 +42,16 @@ func Register(){
         "enrollId" : "jim",
         "enrollSecret" : "abcdefg"
     }`)
-    res, err := http.Post("http://172.22.28.130:7050/registrar", "application/json", bytes.NewBuffer(loginInfo))
+    res, err := http.Post(addr+"/registrar", "application/json", bytes.NewBuffer(loginInfo))
     if err != nil {
         fmt.Printf("Error raised: %v", err)
     }
-
+    b, err := ioutil.ReadAll(res.Body)
+    if err != nil {
+        fmt.Println("error raised: %v", err)
+    }
+    fmt.Println(string(b))
 }
-
-
 
 func Deploy(){
     t := &transmit{
@@ -60,14 +60,14 @@ func Deploy(){
         map[string]interface{}{
             "chaincodeID" : map[string]interface{}{"path": "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"},
             "ctorMsg" : map[string]interface{}{"function" : "deploy","args": []string{"a", "10000", "b", "1 00"}},
-            "secureContext" : "lukas"},
+            "secureContext" : "jim"},
         1,
     }
     b, err := json.Marshal(t)
     if err != nil {
         fmt.Printf("error raise: %v", err)
     }
-    res, err := http.Post("http://172.22.28.130:7050/chaincode", "application/json", bytes.NewBuffer(b))
+    res, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
     if err != nil {
         fmt.Println("error raise; %v", err)
     }
@@ -85,6 +85,6 @@ func main() {
             fmt.Printf("error raised")
         }
     }
-
+    Register()
 }
 
