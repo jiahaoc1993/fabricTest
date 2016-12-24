@@ -1,0 +1,17 @@
+vp1:
+ extends:
+  file: vp-pbft.yaml
+  service: vp-pbft
+ container_name: vp1
+ hostname: vp1
+ environment:
+   - CORE_PEER_DISCOVERY_ROOTNODE=172.22.28.125:7051
+   - CORE_LOGGING_LEVEL=INFO
+   - CORE_PEER_ID=vp1
+   - CORE_PEER_PKI_ECA_PADDR=172.22.28.125:7054
+   - CORE_PEER_PKI_TCA_PADDR=172.22.28.125:7054
+   - CORE_PEER_PKI_TLSCA_PADDR=172.22.28.125:7054
+   - CORE_SECURITY_ENROLLID=test_vp2
+   - CORE_SECURITY_ENROLLSECRET=vQelbRvja7cJ
+ net: "host"
+
