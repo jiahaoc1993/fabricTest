@@ -4,7 +4,7 @@
 	hyperledger/fabric-membersrvc:latest
 	hyperledger/fabric-baseimage:x86_64-0.2.2
 	hyperledger/fabric-baseimage:latest
-
+take care of membersrvc carsh down!!!
 #setp2
  copy the vpn floders to seprate VM hosts and start from vp0 which is bounded with membersrv 
  
