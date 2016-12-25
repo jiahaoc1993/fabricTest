@@ -19,10 +19,10 @@ vp-pbft:
   - CORE_PBFT_GENERAL_TIMEOUT_NULLREQUEST=0s
   - CORE_PBFT_GENERAL_TIMEOUT_BROADCAST=1s
  ports:
-   - "7050:7050"
-   - "7051:7051"
-   - "7052:7052"
-   - "7053:7053"
+   - "7050"
+   - "7051"
+   - "7052"
+   - "7053"
  volumes:
     - /var/run/docker.sock:/var/run/docker.sock
 
