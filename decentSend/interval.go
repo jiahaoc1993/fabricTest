@@ -6,16 +6,15 @@ import (
 	"time"
 )
 
-func main() {
+func test() {
 	start := time.Now()
 	//c := make(chan int)
 	count := 0
-	for time.Since(start).Seconds() <= 1 {
-		go method.Query()
+	for time.Since(start).Seconds() <= 2 {
+		method.Invoke()
 		count++
 	}
 	fmt.Println(count)
-	time.Sleep(10)
 	/*
 		for i := 0; i < 10; i++ {
 			go func() {
@@ -31,4 +30,11 @@ func main() {
 			}
 		}
 	*/
+}
+
+func main() {
+	for i := 0; i < 50; i++ {
+		go test()
+	}
+	time.Sleep(10 * time.Second)
 }

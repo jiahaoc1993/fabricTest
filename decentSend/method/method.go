@@ -113,12 +113,19 @@ func Invoke() {
 	if err != nil {
 		fmt.Println("error raised: %v", err)
 	}
-	res, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
+	_, err = http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
 	if err != nil {
-		fmt.Println("error raised: %v", err)
+		fmt.Println("Error raised: %v", err)
+		os.Exit(0)
 	}
-	body, _ := ioutil.ReadAll(res.Body)
-	fmt.Println(string(body))
+	/*
+		res, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
+		if err != nil {
+			fmt.Println("error raised: %v", err)
+		}
+		body, _ := ioutil.ReadAll(res.Body)
+		fmt.Println(string(body))
+	*/
 }
 
 func Query() {
@@ -136,12 +143,13 @@ func Query() {
 	if err != nil {
 		fmt.Println("error raised: %v", err)
 	}
-	resp, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
-	if err != nil {
-		fmt.Println("error raised: %v", err)
-	}
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(body))
+	//resp, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
+	_, _ = http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
+	//if err != nil {
+	//fmt.Println("error raised: %v", err)
+	//}
+	//body, _ := ioutil.ReadAll(resp.Body)
+	//fmt.Println(string(body))
 }
 
 func main() {
