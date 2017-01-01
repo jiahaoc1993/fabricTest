@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"errors"
-	"golang.org/x/net/context"
+	//"errors"
+	//"golang.org/x/net/context"
 	"github.com/golang/protobuf/jsonpb"
 	pb "github.com/hyperledger/fabric/protos"
 
@@ -20,24 +20,34 @@ type rpcID struct {
 	IntValue    *int64
 	}
 
-func MakeATransaction() {
+func RandomId() string
+
+func MakeATransaction() *Transaction {
 	t := &Transaction{
 		"2.0",
 		"deploy",
 		Params{
 			1,
-
-		}
+			pb.ChaincodeID{"github.com/hyperledger/fabric/examples/chaincode/go/Hello_World"},
+			pb.ChainInput{"Hello", []string{"abc"}},
+			"diego"},
+		rpcID{"id":RandomId()},
 	}
+	return t
+}
 
-	}
 
-
-
+/*
 func Deploy() {
-
+	
 	}
+*/
 
 func main() {
-	fmt.Println("vim-go")
+	var spec pb.ChaincodeSpec
+	t := MakeATransaction()
+	err := jsonpb.Unmarshal(t, &spec)
+	if err != nil {
+		fmt.Println("error raised: %v", err)
+	}
 }
