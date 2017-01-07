@@ -10,10 +10,10 @@ import (
 )
 
 type Transaction struct {
-	Jsonrpc *string           `json:"jsonrpc,omitempty"`
-	Method  *string           `json:"method,omitempty"`
+	Jsonrpc string            `json:"jsonrpc,omitempty"`
+	Method  string            `json:"method,omitempty"`
 	Params  *pb.ChaincodeSpec `json:"params,omitempty"`
-	ID      *rpcID
+	ID      rpcID
 }
 
 type rpcID struct {
@@ -29,12 +29,12 @@ func MakeATransaction() *Transaction {
 		"deploy",
 		*pb.ChaincodeSpec{
 			1,
-			pb.ChaincodeID{"github.com/hyperledger/fabric/examples/chaincode/go/Hello_World"},
-			pb.ChainInput{"Hello", []string{"abc"}},
+			*pb.ChaincodeID{"github.com/hyperledger/fabric/examples/chaincode/go/Hello_World", " "},
+			*pb.ChaincodeInput{"Hello", []string{"abc"}},
 			"diego"},
 		rpcID{"id": RandomId()},
 	}
-	b, err = json.Marshal(t)
+	b, err := json.Marshal(t)
 	if err != nil {
 		fmt.Println("error raised: %v", err)
 	}
