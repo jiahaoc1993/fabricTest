@@ -66,7 +66,7 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	t := &params{
 		1,
 		map[string]string{"path": "github.com/hyperledger/fabric/example/chaincode/go/Hello_World"},
-		ctorMsg{"init", []string{"Hello", "World"}},
+		ctorMsg{"init", []string{"Hello, World"}},
 		"diego"}
 
 	b, err := json.Marshal(t)
@@ -96,11 +96,14 @@ func Deploy() {
 */
 
 func main() {
+	//define the devop server
+	var serverDevops pb.DevopsServer
+	//serverDevops = //use underlying *core.Devops
 	//var spec pb.ChaincodeSpec
 	//	t, err := MakeATransaction()
 	spec, err := MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
 	}
-	fmt.Println(spec)
+	fmt.Println(spec.ChaincodeID)
 }
