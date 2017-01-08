@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
+	//"github.com/hyperledger/fabric/core/chaincode"
+	"github.com/hyperledger/fabric/core/peer"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -89,6 +93,8 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	return &spec, nil
 }
 
+//func getChaincodeBytes(context context.Context)
+
 /*
 func Deploy() {
 
@@ -96,8 +102,22 @@ func Deploy() {
 */
 
 func main() {
+	viper.SetEnvPrefix("core")
+	viper.AutomaticEnv()
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
+
+	if peer.SecurityEnabled() {
+		fmt.Println("abc")
+	}
+
+	fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
+	//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
+	//fmt.Println(viper.GetBool("security.privacy"))
+	//fmt.Println(viper.GetBool("security.enabled"))
+
 	//define the devop server
-	var serverDevops pb.DevopsServer
+	//var serverDevops pb.DevopsServer
 	//serverDevops = //use underlying *core.Devops
 	//var spec pb.ChaincodeSpec
 	//	t, err := MakeATransaction()
