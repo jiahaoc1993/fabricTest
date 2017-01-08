@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 	//"github.com/hyperledger/fabric/core/chaincode"
-	"github.com/hyperledger/fabric/core/peer"
+	//"github.com/hyperledger/fabric/core/peer"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"math/rand"
@@ -107,10 +107,7 @@ func main() {
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	if peer.SecurityEnabled() {
-		fmt.Println("abc")
-	}
-
+	fmt.Println(viper.GetBool("security.enabled"))
 	fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
 	//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
 	//fmt.Println(viper.GetBool("security.privacy"))
