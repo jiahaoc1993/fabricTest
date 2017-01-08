@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"time"
 	//"errors"
 	//"golang.org/x/net/context"
-	"github.com/golang/protobuf/jsonpb"
+	//"github.com/golang/protobuf/jsonpb"
 	pb "github.com/hyperledger/fabric/protos"
 )
 
@@ -59,19 +60,33 @@ func MakeATransaction() (*bytes.Buffer, error) {
 }
 
 // this is only for pb.chaincodSpec
-func MakeAChaincodeSpec() (*bytes.Buffer, error) {
+func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
+	var spec pb.ChaincodeSpec
+
 	t := &params{
 		1,
 		map[string]string{"path": "github.com/hyperledger/fabric/example/chaincode/go/Hello_World"},
 		ctorMsg{"init", []string{"Hello", "World"}},
-		"diego",
-	}
+		"diego"}
+
 	b, err := json.Marshal(t)
 	if err != nil {
 		fmt.Printf("Error raised: %v", err)
 		return nil, err
 	}
-	return bytes.NewBuffer(b), nil
+
+	tmp, err := ioutil.ReadAll(bytes.NewBuffer(b))
+	if err != nil {
+		fmt.Println("Read error: %v", err)
+		return nil, err
+	}
+	//fmt.Println(b, bytes.NewBuffer(b))
+	err = json.Unmarshal(tmp, &spec)
+	if err != nil {
+		fmt.Printf("pb unmarshal error: %v", err)
+		os.Exit(0)
+	}
+	return &spec, nil
 }
 
 /*
@@ -81,14 +96,11 @@ func Deploy() {
 */
 
 func main() {
-	var spec pb.ChaincodeSpec
+	//var spec pb.ChaincodeSpec
 	//	t, err := MakeATransaction()
-	t, err := MakeAChaincodeSpec()
+	spec, err := MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
 	}
-	err = jsonpb.Unmarshal(t, &spec)
-	if err != nil {
-		fmt.Printf("f error raised: %v\n", err)
-	}
+	fmt.Println(spec)
 }
