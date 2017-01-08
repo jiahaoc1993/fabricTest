@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"os"
+	"time"
 	//"errors"
 	//"golang.org/x/net/context"
 	"github.com/golang/protobuf/jsonpb"
@@ -10,35 +14,64 @@ import (
 )
 
 type Transaction struct {
-	Jsonrpc string            `json:"jsonrpc,omitempty"`
-	Method  string            `json:"method,omitempty"`
-	Params  *pb.ChaincodeSpec `json:"params,omitempty"`
-	ID      rpcID
+	Jsonrpc string `json:"jsonrpc,omitempty"`
+	Method  string `json:"method,omitempty"`
+	Params  params `json:"params,omitempty"`
+	ID      int    `json:"id,omitempty"`
 }
 
-type rpcID struct {
-	StringValue *string
-	IntValue    *int64
+type params struct {
+	Type          int               `json:"type,omitempty"`
+	ChaincodeID   map[string]string `json:"chaincodeID,omitempty"`
+	CtorMsg       ctorMsg           `json:"ctorMsg"`
+	SecureContext string            `josn:"secureContext,omitempty"`
 }
 
-func RandomId() string
+type ctorMsg struct {
+	Function string   `json:"function,omitempty"`
+	Args     []string `json:"args,omitempty"`
+}
 
-func MakeATransaction() *Transaction {
+func RandomId() int {
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+	return r.Intn(1000000)
+}
+
+// this is for normal resp trasnaction upon http
+func MakeATransaction() (*bytes.Buffer, error) {
 	t := &Transaction{
 		"2.0",
 		"deploy",
-		*pb.ChaincodeSpec{
+		params{
 			1,
-			*pb.ChaincodeID{"github.com/hyperledger/fabric/examples/chaincode/go/Hello_World", " "},
-			*pb.ChaincodeInput{"Hello", []string{"abc"}},
+			map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/Hello_World"},
+			ctorMsg{"init", []string{"Hello", "World"}},
 			"diego"},
-		rpcID{"id": RandomId()},
+		RandomId(),
 	}
 	b, err := json.Marshal(t)
 	if err != nil {
-		fmt.Println("error raised: %v", err)
+		fmt.Printf("error raised: %v\n", err)
+		return nil, err
 	}
-	return b
+	return bytes.NewBuffer(b), nil
+}
+
+// this is only for pb.chaincodSpec
+func MakeAChaincodeSpec() (*bytes.Buffer, error) {
+	t := &params{
+		1,
+		map[string]string{"path": "github.com/hyperledger/fabric/example/chaincode/go/Hello_World"},
+		ctorMsg{"init", []string{"Hello", "World"}},
+		"diego",
+	}
+	b, err := json.Marshal(t)
+	if err != nil {
+		fmt.Printf("Error raised: %v", err)
+		return nil, err
+	}
+	return bytes.NewBuffer(b), nil
 }
 
 /*
@@ -49,9 +82,13 @@ func Deploy() {
 
 func main() {
 	var spec pb.ChaincodeSpec
-	t := MakeATransaction()
-	err := jsonpb.Unmarshal(t, &spec)
+	//	t, err := MakeATransaction()
+	t, err := MakeAChaincodeSpec()
 	if err != nil {
-		fmt.Println("error raised: %v", err)
+		os.Exit(0)
+	}
+	err = jsonpb.Unmarshal(t, &spec)
+	if err != nil {
+		fmt.Printf("f error raised: %v\n", err)
 	}
 }
