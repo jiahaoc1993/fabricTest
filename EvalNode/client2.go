@@ -16,6 +16,7 @@ import (
 	//"errors"
 	"golang.org/x/net/context"
 	//"github.com/golang/protobuf/jsonpb"
+	crypto "github.com/hyperledger/fabric/core/crypto"
 	pb "github.com/hyperledger/fabric/protos"
 )
 
@@ -105,17 +106,47 @@ func getChaincodeBytes(context context.Context, spec *pb.ChaincodeSpec) (*pb.Cha
 	return chaincodeDeploymentSpec, nil
 }
 
-func main() {
-	//for viper testing
-	/*
-		viper.SetEnvPrefix("core")
-		viper.AutomaticEnv()
-		replacer := strings.NewReplacer(".", "_")
-		viper.SetEnvKeyReplacer(replacer)
+func Deploy(ctx context.Context, spec *pb.ChaincodeSpec) (*string, error) {
+	chaincodeDeploymentSpec, err := getChaincodeBytes(ctx, spec)
+	if err != nil {
+		return nil, err
+	}
 
-		fmt.Println(viper.GetBool("security.enabled"))
-		fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
-	*/
+	transID := chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name
+
+	var tx *pb.Transaction
+	var sec crypto.Client
+
+	sec, err = crypto.InitClient(spec.SecureContext, nil)
+	defer crypto.CloseClient(sec)
+	spec.SecureContext = ""
+
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err = sec.NewChaincodeDeployTransaction(chaincodeDeploymentSpec, transID, spec.Attributes...)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(tx)
+	return &transID, err
+
+}
+
+func main() {
+	//configuration
+	//for viper testing
+
+	viper.SetEnvPrefix("core")
+	viper.AutomaticEnv()
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
+
+	//		fmt.Println(viper.GetBool("security.enabled"))
+	//		fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
+
 	//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
 	//fmt.Println(viper.GetBool("security.privacy"))
 	//fmt.Println(viper.GetBool("security.enabled"))
@@ -125,14 +156,25 @@ func main() {
 	//serverDevops = //use underlying *core.Devops
 	//var spec pb.ChaincodeSpec
 	//	t, err := MakeATransaction()
+	transId := new(string)
 	spec, err := MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
 	}
-	chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
+
+	transId, err = Deploy(context.Background(), spec)
+
 	if err != nil {
-		fmt.Printf("error raised: %v", err)
+		fmt.Printf("Error raised: %v", err)
+		os.Exit(0)
 	}
 
-	fmt.Println(chaincodeDeploymentSpec)
+	fmt.Println(transId)
+	/*
+		chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
+		if err != nil {
+			fmt.Printf("error raised: %v", err)
+		}
+	*/
+	//fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name)
 }
