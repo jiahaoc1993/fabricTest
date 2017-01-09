@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"strings"
+	"github.com/hyperledger/fabric/core/container"
+	//"strings"
 	//"github.com/hyperledger/fabric/core/chaincode"
 	//"github.com/hyperledger/fabric/core/peer"
-	"github.com/spf13/viper"
+	//"github.com/spf13/viper"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"time"
 	//"errors"
-	//"golang.org/x/net/context"
+	"golang.org/x/net/context"
 	//"github.com/golang/protobuf/jsonpb"
 	pb "github.com/hyperledger/fabric/protos"
 )
@@ -50,7 +51,7 @@ func MakeATransaction() (*bytes.Buffer, error) {
 		"deploy",
 		params{
 			1,
-			map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/Hello_World"},
+			map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
 			ctorMsg{"init", []string{"Hello", "World"}},
 			"diego"},
 		RandomId(),
@@ -69,7 +70,7 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 
 	t := &params{
 		1,
-		map[string]string{"path": "github.com/hyperledger/fabric/example/chaincode/go/Hello_World"},
+		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
 		ctorMsg{"init", []string{"Hello, World"}},
 		"diego"}
 
@@ -93,22 +94,28 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	return &spec, nil
 }
 
-//func getChaincodeBytes(context context.Context)
-
-/*
-func Deploy() {
-
+func getChaincodeBytes(context context.Context, spec *pb.ChaincodeSpec) (*pb.ChaincodeDeploymentSpec, error) {
+	var codePackageBytes []byte
+	var err error
+	codePackageBytes, err = container.GetChaincodePackageBytes(spec)
+	if err != nil {
+		return nil, err
 	}
-*/
+	chaincodeDeploymentSpec := &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec, CodePackage: codePackageBytes}
+	return chaincodeDeploymentSpec, nil
+}
 
 func main() {
-	viper.SetEnvPrefix("core")
-	viper.AutomaticEnv()
-	replacer := strings.NewReplacer(".", "_")
-	viper.SetEnvKeyReplacer(replacer)
+	//for viper testing
+	/*
+		viper.SetEnvPrefix("core")
+		viper.AutomaticEnv()
+		replacer := strings.NewReplacer(".", "_")
+		viper.SetEnvKeyReplacer(replacer)
 
-	fmt.Println(viper.GetBool("security.enabled"))
-	fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
+		fmt.Println(viper.GetBool("security.enabled"))
+		fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
+	*/
 	//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
 	//fmt.Println(viper.GetBool("security.privacy"))
 	//fmt.Println(viper.GetBool("security.enabled"))
@@ -122,5 +129,10 @@ func main() {
 	if err != nil {
 		os.Exit(0)
 	}
-	fmt.Println(spec.ChaincodeID)
+	chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
+	if err != nil {
+		fmt.Printf("error raised: %v", err)
+	}
+
+	fmt.Println(chaincodeDeploymentSpec)
 }
