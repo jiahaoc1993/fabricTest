@@ -5,18 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/container"
-	//"strings"
-	//"github.com/hyperledger/fabric/core/chaincode"
-	//"github.com/hyperledger/fabric/core/peer"
-	//"github.com/spf13/viper"
+	//"path/filepath"
+	"github.com/hyperledger/fabric/core"
+	"github.com/hyperledger/fabric/core/peer"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 	//"errors"
 	"golang.org/x/net/context"
 	//"github.com/golang/protobuf/jsonpb"
-	crypto "github.com/hyperledger/fabric/core/crypto"
+	"github.com/hyperledger/fabric/core/crypto"
 	pb "github.com/hyperledger/fabric/protos"
 )
 
@@ -143,9 +144,24 @@ func main() {
 	viper.AutomaticEnv()
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
-
-	//		fmt.Println(viper.GetBool("security.enabled"))
-	//		fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
+	viper.SetConfigName("core")
+	viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("error raise: %v", err))
+	}
+	//viper.Set("peer.fileSystemPath", filepath.Join("/", "var", "hyperledger", "production"))
+	err = core.CacheConfiguration()
+	if err != nil {
+		panic(fmt.Errorf("error raise: %v", err))
+	}
+	//viper.AddConfigPath("/hyperledger/peer/")
+	//viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
+	//fmt.Println(viper.GetString("peer.fileSystemPath"))
+	//fmt.Println(viper.GetString("peer.gomaxprocs"))
+	fmt.Println(viper.GetBool("security.enabled"))
+	fmt.Println(peer.SecurityEnabled())
+	//	fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
 
 	//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
 	//fmt.Println(viper.GetBool("security.privacy"))
@@ -156,20 +172,22 @@ func main() {
 	//serverDevops = //use underlying *core.Devops
 	//var spec pb.ChaincodeSpec
 	//	t, err := MakeATransaction()
-	transId := new(string)
-	spec, err := MakeAChaincodeSpec()
+	//transId := new(string)
+	_, err = MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
 	}
 
-	transId, err = Deploy(context.Background(), spec)
+	/*
+		transId, err = Deploy(context.Background(), spec)
 
-	if err != nil {
-		fmt.Printf("Error raised: %v", err)
-		os.Exit(0)
-	}
+		if err != nil {
+			fmt.Printf("Error raised: %v", err)
+			os.Exit(0)
+		}
 
-	fmt.Println(transId)
+		fmt.Println(transId)
+	*/
 	/*
 		chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
 		if err != nil {
