@@ -54,7 +54,7 @@ func MakeATransaction() (*bytes.Buffer, error) {
 		params{
 			1,
 			map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
-			ctorMsg{"init", []string{"Hello", "World"}},
+			ctorMsg{"init", []string{"Hello,World"}},
 			"diego"},
 		RandomId(),
 	}
