@@ -8,7 +8,7 @@ import (
 	//"path/filepath"
 	"github.com/hyperledger/fabric/core"
 	"github.com/hyperledger/fabric/core/peer"
-	"github.com/spf13/viper"
+	//"github.com/spf13/viper"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -139,44 +139,47 @@ func Deploy(ctx context.Context, spec *pb.ChaincodeSpec) (*string, error) {
 func main() {
 	//configuration
 	//for viper testing
+	/*
+		viper.SetEnvPrefix("core")
+		viper.AutomaticEnv()
+		replacer := strings.NewReplacer(".", "_")
+		viper.SetEnvKeyReplacer(replacer)
+		viper.SetConfigName("core")
+		viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
+		err := viper.ReadInConfig()
+		if err != nil {
+			panic(fmt.Errorf("error raise: %v", err))
+		}
+		//viper.Set("peer.fileSystemPath", filepath.Join("/", "var", "hyperledger", "production"))
+		err = core.CacheConfiguration()
+		if err != nil {
+			panic(fmt.Errorf("error raise: %v", err))
+		}
+		//viper.AddConfigPath("/hyperledger/peer/")
+		//viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
+		//fmt.Println(viper.GetString("peer.fileSystemPath"))
+		//fmt.Println(viper.GetString("peer.gomaxprocs"))
+		fmt.Println(viper.GetBool("security.enabled"))
+		fmt.Println(peer.SecurityEnabled())
+		//	fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
 
-	viper.SetEnvPrefix("core")
-	viper.AutomaticEnv()
-	replacer := strings.NewReplacer(".", "_")
-	viper.SetEnvKeyReplacer(replacer)
-	viper.SetConfigName("core")
-	viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(fmt.Errorf("error raise: %v", err))
-	}
-	//viper.Set("peer.fileSystemPath", filepath.Join("/", "var", "hyperledger", "production"))
-	err = core.CacheConfiguration()
-	if err != nil {
-		panic(fmt.Errorf("error raise: %v", err))
-	}
-	//viper.AddConfigPath("/hyperledger/peer/")
-	//viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
-	//fmt.Println(viper.GetString("peer.fileSystemPath"))
-	//fmt.Println(viper.GetString("peer.gomaxprocs"))
-	fmt.Println(viper.GetBool("security.enabled"))
-	fmt.Println(peer.SecurityEnabled())
-	//	fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
+		//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
+		//fmt.Println(viper.GetBool("security.privacy"))
+		//fmt.Println(viper.GetBool("security.enabled"))
 
-	//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
-	//fmt.Println(viper.GetBool("security.privacy"))
-	//fmt.Println(viper.GetBool("security.enabled"))
-
-	//define the devop server
-	//var serverDevops pb.DevopsServer
-	//serverDevops = //use underlying *core.Devops
-	//var spec pb.ChaincodeSpec
-	//	t, err := MakeATransaction()
-	//transId := new(string)
-	_, err = MakeAChaincodeSpec()
+		//define the devop server
+		//var serverDevops pb.DevopsServer
+		//serverDevops = //use underlying *core.Devops
+		//var spec pb.ChaincodeSpec
+		//	t, err := MakeATransaction()
+		//transId := new(string)
+	*/
+	spec, err = MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
 	}
+
+	fmt.Println(spec)
 
 	/*
 		transId, err = Deploy(context.Background(), spec)
