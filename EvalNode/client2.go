@@ -179,7 +179,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Println(spec)
+	chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
+	if err != nil {
+		os.Exit(0)
+	}
+	fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name)
 
 	/*
 		transId, err = Deploy(context.Background(), spec)
