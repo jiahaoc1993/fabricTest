@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/container"
 	//"path/filepath"
-	"github.com/hyperledger/fabric/core"
-	"github.com/hyperledger/fabric/core/peer"
+	//	"github.com/hyperledger/fabric/core"
+	//	"github.com/hyperledger/fabric/core/peer"
 	//"github.com/spf13/viper"
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"strings"
+	//"strings"
 	"time"
 	//"errors"
 	"golang.org/x/net/context"
@@ -174,7 +174,7 @@ func main() {
 		//	t, err := MakeATransaction()
 		//transId := new(string)
 	*/
-	spec, err = MakeAChaincodeSpec()
+	spec, err := MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
 	}

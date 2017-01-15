@@ -477,11 +477,10 @@
 			"revisionTime": "2016-11-28T00:34:34Z"
 		},
 		{
-			"checksumSHA1": "p/AkbrCV0vCPuGy/xnCrZuusM8g=",
-			"origin": "github.com/hyperledger/fabric/vendor/github.com/mattn/go-sqlite3",
+			"checksumSHA1": "0LV0M9I9ppPvSTrLBQS1iV5NEFw=",
 			"path": "github.com/mattn/go-sqlite3",
-			"revision": "38da839c0e358a52670d0473d3f95117c5fb4324",
-			"revisionTime": "2016-10-19T12:29:52Z"
+			"revision": "eff6379ba09b2fca7aa8216f2132d4c170ed9d46",
+			"revisionTime": "2017-01-10T16:29:59Z"
 		},
 		{
 			"checksumSHA1": "LAR/G/IY1GviHYkGAoi6kVXq1Jg=",
@@ -632,7 +631,7 @@
 			"revisionTime": "2016-12-29T11:00:09Z"
 		},
 		{
-			"checksumSHA1": "TVPnWFpLkVt/6kyPUbsNPz1AECk=",
+			"checksumSHA1": "hkPz6hEdYqeCfy2HFy9Xd/gDtcM=",
 			"origin": "github.com/hyperledger/fabric/vendor/google.golang.org/grpc",
 			"path": "google.golang.org/grpc",
 			"revision": "38da839c0e358a52670d0473d3f95117c5fb4324",
