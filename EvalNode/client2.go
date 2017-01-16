@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/container"
@@ -9,7 +10,7 @@ import (
 	//	"github.com/hyperledger/fabric/core"
 	//	"github.com/hyperledger/fabric/core/peer"
 	//"github.com/spf13/viper"
-	"io/ioutil"
+	//"io/ioutil"
 	"math/rand"
 	"os"
 	//"strings"
@@ -20,6 +21,10 @@ import (
 	"github.com/hyperledger/fabric/core/crypto"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
 	pb "github.com/hyperledger/fabric/protos"
+)
+
+const (
+	localStore string = "/var/hyperledger/production/client/"
 )
 
 type Transaction struct {
@@ -70,6 +75,22 @@ func MakeATransaction() (*bytes.Buffer, error) {
 // this is only for pb.chaincodSpec
 func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	var spec pb.ChaincodeSpec
+	//var spec2 pb.ChaincodeSpec
+	/*
+		function := "init"
+		args := []string{"Hello,Pig", "stupid"}
+		buff1, buff2 := &bytes.Buffer{}, &bytes.Buffer{}
+		gob.NewEncoder(buff1).Encode(function)
+		gob.NewEncoder(buff2).Encode(args)
+		byte1, byte2 := buff1.Bytes(), buff2.Bytes()
+		fmt.Println(byte1, byte2)
+		c1 := &pb.ChaincodeInput{Args: [][]byte{byte1, byte2}}
+		fmt.Println(c1)
+
+		spec.Type = 1 //type
+		spec.ChaincodeID = &pb.ChaincodeID{Path: "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"}
+		spec.CtorMsg = c1
+	*/
 
 	t := &params{
 		1,
@@ -89,11 +110,13 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 		return nil, err
 	}
 	//fmt.Println(b, bytes.NewBuffer(b))
-	err = json.Unmarshal(tmp, &spec)
+	err = json.Unmarshal(tmp, &spec2)
 	if err != nil {
 		fmt.Printf("pb unmarshal error: %v", err)
 		os.Exit(0)
 	}
+
+	//fmt.Println(spec2)
 	return &spec, nil
 }
 
@@ -208,18 +231,20 @@ func main() {
 	if err != nil {
 		os.Exit(0)
 	}
-	fmt.Println(spec.Attributes)
+	fmt.Println(spec)
 
-	chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
-	if err != nil {
-		os.Exit(0)
-	}
+	/*
+		chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
+		if err != nil {
+			os.Exit(0)
+		}
 
-	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
-	if err != nil {
-		os.Exit(0)
-	}
-	fmt.Println(tx.Timestamp)
+		tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
+		if err != nil {
+			os.Exit(0)
+		}
+		fmt.Println(tx.Timestamp)
+	*/
 	/*
 		transId, err = Deploy(context.Background(), spec)
 
