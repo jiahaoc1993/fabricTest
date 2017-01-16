@@ -18,6 +18,7 @@ import (
 	"golang.org/x/net/context"
 	//"github.com/golang/protobuf/jsonpb"
 	"github.com/hyperledger/fabric/core/crypto"
+	"github.com/hyperledger/fabric/core/crypto/primitives"
 	pb "github.com/hyperledger/fabric/protos"
 )
 
@@ -107,12 +108,31 @@ func getChaincodeBytes(context context.Context, spec *pb.ChaincodeSpec) (*pb.Cha
 	return chaincodeDeploymentSpec, nil
 }
 
-func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid string, attrs ...string) (*pb.Transaction, error) {
+func getMetadata(chaincodeSpec *pb.ChaincodeSpec) ([]byte, error) {
+	return chaincodeSpec.Metadata, nil
+}
+
+func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid string, nonce []byte, attrs ...string) (*pb.Transaction, error) {
 	tx, err := pb.NewChaincodeDeployTransaction(chaincodeDeploymentSpec, uuid)
 	if err != nil {
 		return nil, err
 	}
+	tx.Metadata, err = getMetadata(chaincodeDeploymentSpec.GetChaincodeSpec())
+	if err != nil {
+		return nil, err
+	}
 
+	if nonce == nil {
+		tx.Nonce, err = primitives.GetRandomNonce()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		tx.Nonce = nonce
+	}
+
+	//handle confidentiality
+	fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ConfidentialityLevel)
 	return tx, nil
 
 }
@@ -195,7 +215,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, spec.Attributes...)
+	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
 	if err != nil {
 		os.Exit(0)
 	}
