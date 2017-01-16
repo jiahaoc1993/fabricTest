@@ -73,7 +73,7 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	t := &params{
 		1,
 		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
-		ctorMsg{"init", []string{"Hello, World"}},
+		ctorMsg{"init", []string{"Hello, Pig"}},
 		"diego"}
 
 	b, err := json.Marshal(t)
@@ -105,6 +105,16 @@ func getChaincodeBytes(context context.Context, spec *pb.ChaincodeSpec) (*pb.Cha
 	}
 	chaincodeDeploymentSpec := &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec, CodePackage: codePackageBytes}
 	return chaincodeDeploymentSpec, nil
+}
+
+func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid string, attrs ...string) (*pb.Transaction, error) {
+	tx, err := pb.NewChaincodeDeployTransaction(chaincodeDeploymentSpec, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	return tx, nil
+
 }
 
 func Deploy(ctx context.Context, spec *pb.ChaincodeSpec) (*string, error) {
@@ -178,13 +188,18 @@ func main() {
 	if err != nil {
 		os.Exit(0)
 	}
+	fmt.Println(spec.Attributes)
 
 	chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
 	if err != nil {
 		os.Exit(0)
 	}
-	fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name)
 
+	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, spec.Attributes...)
+	if err != nil {
+		os.Exit(0)
+	}
+	fmt.Println(tx.Timestamp)
 	/*
 		transId, err = Deploy(context.Background(), spec)
 
