@@ -10,6 +10,7 @@ import (
 	//	"github.com/hyperledger/fabric/core"
 	//	"github.com/hyperledger/fabric/core/peer"
 	//"github.com/spf13/viper"
+	//"crypto/elliptic"
 	"crypto/rand"
 	"io/ioutil"
 	"os"
@@ -21,6 +22,7 @@ import (
 	"github.com/hyperledger/fabric/core/crypto/primitives"
 	"github.com/hyperledger/fabric/core/crypto/primitives/ecies"
 	pb "github.com/hyperledger/fabric/protos"
+	"tool/loadKey"
 )
 
 const (
@@ -49,6 +51,17 @@ type params struct {
 type ctorMsg struct {
 	Function string   `json:"function,omitempty"`
 	Args     []string `json:"args,omitempty"`
+}
+
+func Init() (err error) { //init the crypto layer
+	securityLevel := 256
+	hashAlgorithm := "SHA3"
+	if err = primitives.InitSecurityLevel(hashAlgorithm, securityLevel); err != nil {
+		panic(fmt.Errorf("Failed setting security level: %v", err))
+		return err
+	}
+
+	return nil
 }
 
 // this is only for pb.chaincodSpec
@@ -116,7 +129,7 @@ func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid st
 	} else {
 		tx.Nonce = nonce
 	}
-
+	tx.ConfidentialityLevel = pb.ConfidentialityLevel_CONFIDENTIAL
 	tx.ConfidentialityProtocolVersion = "1.2"
 	//handle confidentiality
 	//fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ConfidentialityLevel)
@@ -130,7 +143,6 @@ func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid st
 }
 
 func encryptTx(tx *pb.Transaction) error {
-	var defaultCurve elliptic.Curve
 	eciesSPI := ecies.NewSPI()
 	ccPrivateKey, err := eciesSPI.NewPrivateKey(rand.Reader, primitives.GetDefaultCurve())
 	if err != nil {
@@ -155,18 +167,32 @@ func encryptTx(tx *pb.Transaction) error {
 		return err
 	}
 
-	msgToValidators, err := asn1.Marshal(chainCodeValidatorMessage1_2{privaBytes, stateKey})
+	chainPublicKey, err := loadKey.LoadKey()
+	if err != nil {
+		fmt.Println("error")
+	}
+
+	//fmt.Println("This is chainPublicKey: ", chainPublicKey.pub)
+
+	cipher, err := eciesSPI.NewAsymmetricCipherFromPublicKey(chainPublicKey)
+
+	_, err = asn1.Marshal(chainCodeValidatorMessage1_2{privaBytes, stateKey})
 	if err != nil {
 		panic(fmt.Errorf("Failed to preparing message to the validators: %v", err))
 	}
 
-	fmt.Println(msgToValidators)
+	encMsgToValidators, err := cipher.Process([]byte{123})
+	if err != nil {
+		panic(fmt.Errorf("Failed to encrypting message to the validators: %v", err))
+	}
+	fmt.Println(encMsgToValidators)
 
 	return nil
 
 }
 
 func main() {
+	Init()
 	//configuration
 	//for viper testing
 	/*
@@ -216,11 +242,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
+	_, err = CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
 	if err != nil {
 		os.Exit(0)
 	}
-	fmt.Println(tx.Timestamp)
 
 	/*
 		transId, err = Deploy(context.Background(), spec)
