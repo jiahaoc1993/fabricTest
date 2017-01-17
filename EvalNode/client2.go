@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/asn1"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/container"
@@ -9,22 +10,27 @@ import (
 	//	"github.com/hyperledger/fabric/core"
 	//	"github.com/hyperledger/fabric/core/peer"
 	//"github.com/spf13/viper"
+	"crypto/rand"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	//"strings"
-	"time"
 	//"errors"
 	"golang.org/x/net/context"
 	//"github.com/golang/protobuf/jsonpb"
-	"github.com/hyperledger/fabric/core/crypto"
+	//"github.com/hyperledger/fabric/core/crypto"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
+	"github.com/hyperledger/fabric/core/crypto/primitives/ecies"
 	pb "github.com/hyperledger/fabric/protos"
 )
 
 const (
 	localStore string = "/var/hyperledger/production/client/"
 )
+
+type chainCodeValidatorMessage1_2 struct {
+	PrivateKey []byte
+	StateKey   []byte
+}
 
 type Transaction struct {
 	Jsonrpc string `json:"jsonrpc,omitempty"`
@@ -43,32 +49,6 @@ type params struct {
 type ctorMsg struct {
 	Function string   `json:"function,omitempty"`
 	Args     []string `json:"args,omitempty"`
-}
-
-func RandomId() int {
-	src := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(src)
-	return r.Intn(1000000)
-}
-
-// this is for normal resp trasnaction upon http
-func MakeATransaction() (*bytes.Buffer, error) {
-	t := &Transaction{
-		"2.0",
-		"deploy",
-		params{
-			1,
-			map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
-			ctorMsg{"init", []string{"Hello,World"}},
-			"diego"},
-		RandomId(),
-	}
-	b, err := json.Marshal(t)
-	if err != nil {
-		fmt.Printf("error raised: %v\n", err)
-		return nil, err
-	}
-	return bytes.NewBuffer(b), nil
 }
 
 // this is only for pb.chaincodSpec
@@ -137,67 +117,52 @@ func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid st
 		tx.Nonce = nonce
 	}
 
-	tx.confidentialityProtocolVersion = "1.2"
+	tx.ConfidentialityProtocolVersion = "1.2"
 	//handle confidentiality
 	//fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ConfidentialityLevel)
-	encryptTx(tx)
+	err = encryptTx(tx)
+	if err != nil {
+		return nil, err
+	}
 
 	return tx, nil
 
 }
 
 func encryptTx(tx *pb.Transaction) error {
-	ccPrivateKey, err := primitives.AsymmetricCipherSPI.NewPrivateKey(rand.Reader, primitives.GetDefaultCure())
+	var defaultCurve elliptic.Curve
+	eciesSPI := ecies.NewSPI()
+	ccPrivateKey, err := eciesSPI.NewPrivateKey(rand.Reader, primitives.GetDefaultCurve())
 	if err != nil {
 		panic(fmt.Errorf("Failed generete chaincode keypair: %v\n", err))
 		return err
 	}
 
 	var (
-		stateKey  []byte
-		privaByte []byte
+		stateKey   []byte
+		privaBytes []byte
 	)
 
-	stateKey, err := primitives.GenAESKey()
+	stateKey, err = primitives.GenAESKey()
 	if err != nil {
 		panic(fmt.Errorf("Failed creating state key: %v\n", err))
 		return err
 	}
 
-	privBytes, err := primitives.AsymmetricCipherSPI.SerializePrivateKey(ccPrivateKey)
+	privaBytes, err = eciesSPI.SerializePrivateKey(ccPrivateKey)
 	if err != nil {
 		panic(fmt.Errorf("Failed serializing chaincode key: %v\n", err))
 		return err
 	}
 
-}
-
-func Deploy(ctx context.Context, spec *pb.ChaincodeSpec) (*string, error) {
-	chaincodeDeploymentSpec, err := getChaincodeBytes(ctx, spec)
+	msgToValidators, err := asn1.Marshal(chainCodeValidatorMessage1_2{privaBytes, stateKey})
 	if err != nil {
-		return nil, err
+		panic(fmt.Errorf("Failed to preparing message to the validators: %v", err))
 	}
 
-	transID := chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name
+	fmt.Println(msgToValidators)
 
-	var tx *pb.Transaction
-	var sec crypto.Client
-
-	sec, err = crypto.InitClient(spec.SecureContext, nil)
-	defer crypto.CloseClient(sec)
-	spec.SecureContext = ""
-
-	if err != nil {
-		return nil, err
-	}
-
-	tx, err = sec.NewChaincodeDeployTransaction(chaincodeDeploymentSpec, transID, spec.Attributes...)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println(tx)
-	return &transID, err
+	return nil
 
 }
 
