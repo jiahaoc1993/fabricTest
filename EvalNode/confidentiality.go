@@ -38,6 +38,7 @@ func newPublicKeyFromECDSA(r io.Reader, pk *ecdsa.PublicKey) (primitives.PublicK
 }
 
 func main() {
+	eciesSPI := ecies.NewSPI()
 	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/query.key"
 	pem, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -60,15 +61,17 @@ func main() {
 	t, ok := publicKey.(*ecdsa.PublicKey)
 	if ok {
 		//fmt.Println("1")
-		chainPublicKey, err := newPublicKeyFromECDSA(nil, t)
+		chainPublicKey, err := eciesSPI.NewPublicKey(nil, t)
 		if err != nil {
 			fmt.Println("Wrong")
 		}
-		fmt.Println(chainPublicKey)
-	} //	chainPublicKey, err := primitives.AsymmetricCipherSPI.NewPublicKey(nil, publicKey.(*ecdsa.PublicKey)) // interface goes here type assertion
-	//	if err != nil {
-	//		os.Exit(0)
-	//	}
-	//	fmt.Println(chainPublicKey)
+
+		cipher, err := eciesSPI.NewAsymmetricCipherFromPublicKey(chainPublicKey)
+		if err != nil {
+			panic(fmt.Errorf("Failed creating new encryption shcheme: %v", err))
+		}
+		fmt.Println(cipher)
+
+	}
 
 }
