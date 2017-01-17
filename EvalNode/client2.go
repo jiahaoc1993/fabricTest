@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/container"
@@ -10,7 +9,7 @@ import (
 	//	"github.com/hyperledger/fabric/core"
 	//	"github.com/hyperledger/fabric/core/peer"
 	//"github.com/spf13/viper"
-	//"io/ioutil"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	//"strings"
@@ -76,22 +75,6 @@ func MakeATransaction() (*bytes.Buffer, error) {
 func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	var spec pb.ChaincodeSpec
 	//var spec2 pb.ChaincodeSpec
-	/*
-		function := "init"
-		args := []string{"Hello,Pig", "stupid"}
-		buff1, buff2 := &bytes.Buffer{}, &bytes.Buffer{}
-		gob.NewEncoder(buff1).Encode(function)
-		gob.NewEncoder(buff2).Encode(args)
-		byte1, byte2 := buff1.Bytes(), buff2.Bytes()
-		fmt.Println(byte1, byte2)
-		c1 := &pb.ChaincodeInput{Args: [][]byte{byte1, byte2}}
-		fmt.Println(c1)
-
-		spec.Type = 1 //type
-		spec.ChaincodeID = &pb.ChaincodeID{Path: "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"}
-		spec.CtorMsg = c1
-	*/
-
 	t := &params{
 		1,
 		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
@@ -110,12 +93,12 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 		return nil, err
 	}
 	//fmt.Println(b, bytes.NewBuffer(b))
-	err = json.Unmarshal(tmp, &spec2)
+	err = json.Unmarshal(tmp, &spec)
 	if err != nil {
 		fmt.Printf("pb unmarshal error: %v", err)
 		os.Exit(0)
 	}
-
+	spec.ConfidentialityLevel = pb.ConfidentialityLevel_CONFIDENTIAL
 	//fmt.Println(spec2)
 	return &spec, nil
 }
@@ -154,9 +137,38 @@ func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid st
 		tx.Nonce = nonce
 	}
 
+	tx.confidentialityProtocolVersion = "1.2"
 	//handle confidentiality
-	fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ConfidentialityLevel)
+	//fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ConfidentialityLevel)
+	encryptTx(tx)
+
 	return tx, nil
+
+}
+
+func encryptTx(tx *pb.Transaction) error {
+	ccPrivateKey, err := primitives.AsymmetricCipherSPI.NewPrivateKey(rand.Reader, primitives.GetDefaultCure())
+	if err != nil {
+		panic(fmt.Errorf("Failed generete chaincode keypair: %v\n", err))
+		return err
+	}
+
+	var (
+		stateKey  []byte
+		privaByte []byte
+	)
+
+	stateKey, err := primitives.GenAESKey()
+	if err != nil {
+		panic(fmt.Errorf("Failed creating state key: %v\n", err))
+		return err
+	}
+
+	privBytes, err := primitives.AsymmetricCipherSPI.SerializePrivateKey(ccPrivateKey)
+	if err != nil {
+		panic(fmt.Errorf("Failed serializing chaincode key: %v\n", err))
+		return err
+	}
 
 }
 
@@ -233,18 +245,18 @@ func main() {
 	}
 	fmt.Println(spec)
 
-	/*
-		chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
-		if err != nil {
-			os.Exit(0)
-		}
+	chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
 
-		tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
-		if err != nil {
-			os.Exit(0)
-		}
-		fmt.Println(tx.Timestamp)
-	*/
+	if err != nil {
+		os.Exit(0)
+	}
+
+	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
+	if err != nil {
+		os.Exit(0)
+	}
+	fmt.Println(tx.Timestamp)
+
 	/*
 		transId, err = Deploy(context.Background(), spec)
 
