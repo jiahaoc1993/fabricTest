@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"tool/loadKey"
+	//"tool/loadKey"
+	pb "github.com/hyperledger/fabric/protos"
+	"tool/rpc"
 )
 
 func main() {
-	_, _, err := loadKey.LoadEnrollment()
-	if err != nil {
-		fmt.Println(err)
-	}
+	response := rpc.Connect(&pb.Transaction{})
+	fmt.Println(response)
 }
