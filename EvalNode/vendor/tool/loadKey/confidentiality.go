@@ -3,6 +3,7 @@ package loadKey
 import (
 	"crypto/ecdsa"
 	//	"crypto/rand"
+	"crypto/x509"
 	"fmt"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
 	"github.com/hyperledger/fabric/core/crypto/primitives/ecies"
@@ -11,16 +12,63 @@ import (
 	//	"io"
 )
 
+func loadEnrollmentKey() (*ecdsa.PrivateKey, error) {
+	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/enrollment.key"
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+		//panic(fmt.Errorf("Failed loading private key: %v", err))
+	}
+
+	privateKey, err := primitives.PEMtoPrivateKey(raw, nil)
+	if err != nil {
+		return nil, err
+		//panic(fmt.Errorf("Failed parsing private key: %v", err))
+	}
+	return privateKey.(*ecdsa.PrivateKey), nil
+
+}
+
+func loadEnrollmentCertificate() (*x509.Certificate, []byte, error) {
+	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/enrollment.cert"
+	pem, err := ioutil.ReadFile(path)
+	if err != nil {
+		//panic(fmt.Errorf("Failed loading certificate: %v", err))
+		return nil, nil, err
+	}
+	cert, der, err := primitives.PEMtoCertificateAndDER(pem)
+	if err != nil {
+		return nil, nil, err
+		//fmt.Errorf("Failed parsing certificate: %v", err))
+	}
+	return cert, der, nil
+}
+
+func LoadEnrollment() (*x509.Certificate, *ecdsa.PrivateKey, error) {
+	cert, _, err := loadEnrollmentCertificate()
+	if err != nil {
+		fmt.Printf("loadEnrollmentCertificate failed: %v\n", err)
+		return nil, nil, err
+	}
+	pk := cert.PublicKey.(*ecdsa.PublicKey) // public key in enrollment certificate
+
+	privKey, err := loadEnrollmentKey() // private key
+	if err != nil {
+		fmt.Printf("loadEnrollmentKey failed: %v\n", err)
+		return nil, nil, err
+	}
+
+	err = primitives.VerifySignCapability(privKey, pk)
+	if err != nil {
+		fmt.Println("Failed Checking enrollment certificate against enrollment key: %v", err.Error())
+		return nil, nil, err
+	}
+	return cert, privKey, nil
+}
+
 func LoadKey() (primitives.PublicKey, error) {
 	eciesSPI := ecies.NewSPI()
-	/*
-		path := "/var/hyperledger/production/crypto/client/diego/ks/raw/query.key"
-		pem, err := ioutil.ReadFile(path)
-		if err != nil {
-			panic(fmt.Errorf("Read Error: %v\n", err))
-		}
-		fmt.Println(pem)
-	*/
+
 	pathChainKey := "/var/hyperledger/production/crypto/client/diego/ks/raw/chain.key"
 	raw, err := ioutil.ReadFile(pathChainKey)
 	if err != nil {

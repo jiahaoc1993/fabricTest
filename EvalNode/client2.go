@@ -16,6 +16,7 @@ import (
 	"os"
 	//"strings"
 	//"errors"
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 	//"github.com/golang/protobuf/jsonpb"
 	//"github.com/hyperledger/fabric/core/crypto"
@@ -23,6 +24,7 @@ import (
 	"github.com/hyperledger/fabric/core/crypto/primitives/ecies"
 	pb "github.com/hyperledger/fabric/protos"
 	"tool/loadKey"
+	"tool/rpc"
 )
 
 const (
@@ -131,8 +133,6 @@ func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid st
 	}
 	tx.ConfidentialityLevel = pb.ConfidentialityLevel_CONFIDENTIAL
 	tx.ConfidentialityProtocolVersion = "1.2"
-	//handle confidentiality
-	//fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ConfidentialityLevel)
 	err = encryptTx(tx)
 	if err != nil {
 		return nil, err
@@ -176,60 +176,74 @@ func encryptTx(tx *pb.Transaction) error {
 
 	cipher, err := eciesSPI.NewAsymmetricCipherFromPublicKey(chainPublicKey)
 
-	_, err = asn1.Marshal(chainCodeValidatorMessage1_2{privaBytes, stateKey})
+	msgToValidators, err := asn1.Marshal(chainCodeValidatorMessage1_2{privaBytes, stateKey})
 	if err != nil {
 		panic(fmt.Errorf("Failed to preparing message to the validators: %v", err))
 	}
 
-	encMsgToValidators, err := cipher.Process([]byte{123})
+	encMsgToValidators, err := cipher.Process(msgToValidators)
 	if err != nil {
 		panic(fmt.Errorf("Failed to encrypting message to the validators: %v", err))
 	}
-	fmt.Println(encMsgToValidators)
+	tx.ToValidators = encMsgToValidators
+
+	//initilize a new cipher
+	cipher, err = eciesSPI.NewAsymmetricCipherFromPublicKey(ccPrivateKey.GetPublicKey())
+	if err != nil {
+		panic(fmt.Errorf("Failed initliazing encryption scheme: %v", err))
+	}
+
+	encryptedChaincodeID, err := cipher.Process(tx.ChaincodeID)
+	if err != nil {
+		panic(fmt.Errorf("Failed encrypting chaincodeID: %v", err))
+	}
+	tx.ChaincodeID = encryptedChaincodeID
+
+	encryptedPayload, err := cipher.Process(tx.Payload)
+	if err != nil {
+		panic(fmt.Errorf("Failed encrypting payload: %v", err))
+	}
+	tx.Payload = encryptedPayload
+
+	if len(tx.Metadata) != 0 {
+		encryptedMetadata, err := cipher.Process(tx.Metadata)
+		if err != nil {
+			panic(fmt.Errorf("Failed to encrypt metadata"))
+		}
+		tx.Metadata = encryptedMetadata
+	}
 
 	return nil
+}
 
+func Sign(tx *pb.Transaction) error {
+	enrollmentCert, privKey, err := loadKey.LoadEnrollment()
+	if err != nil {
+		fmt.Printf("Failed loading enrollment metieral")
+		return err
+	}
+
+	tx.Cert = enrollmentCert.Raw
+
+	rawTx, err := proto.Marshal(tx)
+	if err != nil {
+		fmt.Printf("Failed marshaling tx: %v", err)
+		return err
+	}
+
+	rawSignature, err := primitives.ECDSASign(privKey, rawTx)
+	if err != nil {
+		fmt.Println("Failed Creating signature: %v", err)
+		return err
+	}
+
+	tx.Signature = rawSignature
+
+	return nil
 }
 
 func main() {
 	Init()
-	//configuration
-	//for viper testing
-	/*
-		viper.SetEnvPrefix("core")
-		viper.AutomaticEnv()
-		replacer := strings.NewReplacer(".", "_")
-		viper.SetEnvKeyReplacer(replacer)
-		viper.SetConfigName("core")
-		viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
-		err := viper.ReadInConfig()
-		if err != nil {
-			panic(fmt.Errorf("error raise: %v", err))
-		}
-		//viper.Set("peer.fileSystemPath", filepath.Join("/", "var", "hyperledger", "production"))
-		err = core.CacheConfiguration()
-		if err != nil {
-			panic(fmt.Errorf("error raise: %v", err))
-		}
-		//viper.AddConfigPath("/hyperledger/peer/")
-		//viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
-		//fmt.Println(viper.GetString("peer.fileSystemPath"))
-		//fmt.Println(viper.GetString("peer.gomaxprocs"))
-		fmt.Println(viper.GetBool("security.enabled"))
-		fmt.Println(peer.SecurityEnabled())
-		//	fmt.Println(string(viper.GetString("peer.validator.consensus.plugin")))
-
-		//fmt.Println(viper.GetString("chaincode.mode") == chaincode.DevModeUserRunsChaincode)
-		//fmt.Println(viper.GetBool("security.privacy"))
-		//fmt.Println(viper.GetBool("security.enabled"))
-
-		//define the devop server
-		//var serverDevops pb.DevopsServer
-		//serverDevops = //use underlying *core.Devops
-		//var spec pb.ChaincodeSpec
-		//	t, err := MakeATransaction()
-		//transId := new(string)
-	*/
 	spec, err := MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
@@ -242,26 +256,18 @@ func main() {
 		os.Exit(0)
 	}
 
-	_, err = CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, []byte{}, spec.Attributes...)
+	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, nil, spec.Attributes...)
 	if err != nil {
 		os.Exit(0)
 	}
 
-	/*
-		transId, err = Deploy(context.Background(), spec)
+	err = Sign(tx)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
 
-		if err != nil {
-			fmt.Printf("Error raised: %v", err)
-			os.Exit(0)
-		}
+	fmt.Println(tx.Nonce)
+	rpc.Connect(tx)
 
-		fmt.Println(transId)
-	*/
-	/*
-		chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
-		if err != nil {
-			fmt.Printf("error raised: %v", err)
-		}
-	*/
-	//fmt.Println(chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name)
 }
