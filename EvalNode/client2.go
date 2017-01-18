@@ -267,7 +267,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Println(tx.Nonce)
-	rpc.Connect(tx)
+	//fmt.Println(tx.Nonce)
 
+	response := rpc.Connect(tx)
+	fmt.Println(response)
 }
