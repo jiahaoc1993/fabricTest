@@ -13,7 +13,7 @@ import (
 )
 
 func loadEnrollmentKey() (*ecdsa.PrivateKey, error) {
-	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/enrollment.key"
+	path := "/var/hyperledger/production/crypto/client/lukas/ks/raw/enrollment.key"
 	raw, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func loadEnrollmentKey() (*ecdsa.PrivateKey, error) {
 }
 
 func loadEnrollmentCertificate() (*x509.Certificate, []byte, error) {
-	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/enrollment.cert"
+	path := "/var/hyperledger/production/crypto/client/lukas/ks/raw/enrollment.cert"
 	pem, err := ioutil.ReadFile(path)
 	if err != nil {
 		//panic(fmt.Errorf("Failed loading certificate: %v", err))
@@ -69,7 +69,7 @@ func LoadEnrollment() (*x509.Certificate, *ecdsa.PrivateKey, error) {
 func LoadKey() (primitives.PublicKey, error) {
 	eciesSPI := ecies.NewSPI()
 
-	pathChainKey := "/var/hyperledger/production/crypto/client/diego/ks/raw/chain.key"
+	pathChainKey := "/var/hyperledger/production/crypto/client/lukas/ks/raw/chain.key"
 	raw, err := ioutil.ReadFile(pathChainKey)
 	if err != nil {
 		panic(fmt.Errorf("Failed loading private key: %v\n", err))

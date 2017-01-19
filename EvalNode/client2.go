@@ -25,6 +25,7 @@ import (
 	pb "github.com/hyperledger/fabric/protos"
 	"tool/loadKey"
 	"tool/rpc"
+	"tool/initViper"
 )
 
 const (
@@ -72,9 +73,9 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	//var spec2 pb.ChaincodeSpec
 	t := &params{
 		1,
-		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
-		ctorMsg{"init", []string{"Hello, Pig"}},
-		"diego"}
+		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"},
+		ctorMsg{"init", []string{"a","100000","b","10000"}},
+		"lukas"}
 
 	b, err := json.Marshal(t)
 	if err != nil {
@@ -244,6 +245,10 @@ func Sign(tx *pb.Transaction) error {
 
 func main() {
 	Init()
+	err := initViper.SetConfig()
+	if err != nil {
+		panic(fmt.Errorf("Error loading viper config file"))
+	}
 	spec, err := MakeAChaincodeSpec()
 	if err != nil {
 		os.Exit(0)

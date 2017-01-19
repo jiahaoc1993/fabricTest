@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	peerAddress = "172.22.28.123:7051"
+	peerAddress = "10.0.2.15:7051"
 )
 
 func Connect(tx *pb.Transaction) (response *pb.Response) {
