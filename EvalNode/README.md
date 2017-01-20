@@ -4,3 +4,5 @@ have fun with govendor, build own dependences through govendor add +external and
 sucessfully deployed the transaction!!
 note the the core2.yaml replace path_version to 0.6.2-preview
 
+something wrong with enrollment certificate  fix it !!
+
