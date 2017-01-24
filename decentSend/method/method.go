@@ -106,7 +106,7 @@ func Invoke() {
 			1,
 			map[string]string{"name": info},
 			ctorMsg{"invoke", []string{"a", "b", "1"}},
-			"diego"},
+			"lukas"},
 		RandomId(),
 	}
 	b, err := json.Marshal(t)
