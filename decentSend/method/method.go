@@ -1,4 +1,4 @@
-package method
+package main
 
 import (
 	"bytes"
@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	addr string = "http://172.22.28.123:7050"
-	info string = "aa5552158725fda5bc0764d0aaa7ccb31e0887a6e10b1c773f586f57deb5e05d8f5400c26ed9e401d865b52159e203a987c2b0b99311445830f49713c3cf080b"
+	addr string = "http://10.0.2.15:7050"
+	//info string = "aa5552158725fda5bc0764d0aaa7ccb31e0887a6e10b1c773f586f57deb5e05d8f5400c26ed9e401d865b52159e203a987c2b0b99311445830f49713c3cf080b"
+	info string = "282507e462b5bddba68ab7271d93c1fa720c2f0e03bfaa4d33e97712463eb2fa0e4808d960fca480d7abe081b21eff8651d58edcb14157b7eb11106541edc36a"
+
 )
 
 type transmit struct {
@@ -82,7 +84,7 @@ func Deploy() {
 			1,
 			map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"},
 			ctorMsg{"init", []string{"a", "10000000", "b", "0"}},
-			"diego"},
+			"lukas"},
 		RandomId(),
 	}
 	b, err := json.Marshal(t)
@@ -136,7 +138,7 @@ func Query() {
 			1,
 			map[string]string{"name": info},
 			ctorMsg{"query", []string{"a"}},
-			"diego"},
+			"lukas"},
 		RandomId(),
 	}
 	b, err := json.Marshal(t)
@@ -144,12 +146,13 @@ func Query() {
 		fmt.Println("error raised: %v", err)
 	}
 	//resp, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
-	_, _ = http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
-	//if err != nil {
-	//fmt.Println("error raised: %v", err)
-	//}
-	//body, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(body))
+	resp, err := http.Post(addr+"/chaincode", "application/json", bytes.NewBuffer(b))
+	if err != nil {
+	fmt.Println("error raised: %v", err)
+	}
+	//fmt.Println(resp)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 }
 
 func main() {
