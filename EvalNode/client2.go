@@ -74,7 +74,7 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	t := &params{
 		1,
 		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"},
-		ctorMsg{"init", []string{"a","100000","b","10000"}},
+		ctorMsg{"init", []string{"a","100000","b","0"}},
 		"lukas"}
 
 	b, err := json.Marshal(t)

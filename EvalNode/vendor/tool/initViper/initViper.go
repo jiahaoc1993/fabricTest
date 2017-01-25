@@ -15,7 +15,7 @@ func SetConfig() error{
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
 	viper.AddConfigPath("/opt/gopath/src/github.com/hyperledger/fabric/peer/")
-	viper.SetConfigName("core2")
+	viper.SetConfigName("core")
 	err := viper.ReadInConfig()
 	if err != nil {
 		//panic(fmt.Errorf("Fatal error when reading config file"))

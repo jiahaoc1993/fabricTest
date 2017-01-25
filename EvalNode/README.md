@@ -7,3 +7,6 @@ note the the core2.yaml replace path_version to 0.6.2-preview
 something wrong with enrollment certificate  fix it !!
 
 use the Tcert
+
+forget about deployment
+useing invoke!
