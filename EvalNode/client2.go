@@ -24,7 +24,7 @@ import (
 	"github.com/hyperledger/fabric/core/crypto/primitives/ecies"
 	pb "github.com/hyperledger/fabric/protos"
 	"tool/loadKey"
-	"tool/rpc"
+//	"tool/rpc"
 	"tool/initViper"
 )
 
@@ -68,13 +68,13 @@ func Init() (err error) { //init the crypto layer
 }
 
 // this is only for pb.chaincodSpec
-func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
+func DeployChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	var spec pb.ChaincodeSpec
 	//var spec2 pb.ChaincodeSpec
 	t := &params{
 		1,
-		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"},
-		ctorMsg{"init", []string{"a","100000","b","0"}},
+		map[string]string{"path": "github.com/hyperledger/fabric/examples/chaincode/go/HelloWorld"},
+		ctorMsg{"init", []string{"a"}},
 		"lukas"}
 
 	b, err := json.Marshal(t)
@@ -98,6 +98,40 @@ func MakeAChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	//fmt.Println(spec2)
 	return &spec, nil
 }
+
+func InvokeChaincodeSpec() (*pb.ChaincodeSpec, error) {
+	var spec pb.ChaincodeSpec
+	//var spec2 pb.ChaincodeSpec
+	t := &params{
+		1,
+		map[string]string{"name": info},
+		ctorMsg{"invoke", []string{"a", "b", "1"}},
+		"lukas"
+	}
+	b, err := json.Marshal(t)
+	if err != nil {
+		fmt.Printf("Error raised: %v", err)
+		return nil, err
+	}
+
+	tmp, err := ioutil.ReadAll(bytes.NewBuffer(b))
+	if err != nil {
+		fmt.Println("Read error: %v", err)
+		return nil, err
+	}
+	//fmt.Println(b, bytes.NewBuffer(b))
+	err = json.Unmarshal(tmp, &spec)
+	if err != nil {
+		fmt.Printf("pb unmarshal error: %v", err)
+		os.Exit(0)
+	}
+	spec.ConfidentialityLevel = pb.ConfidentialityLevel_CONFIDENTIAL
+	//fmt.Println(spec2)
+	return &spec, nil
+
+}
+
+
 
 func getChaincodeBytes(context context.Context, spec *pb.ChaincodeSpec) (*pb.ChaincodeDeploymentSpec, error) {
 	var codePackageBytes []byte
@@ -273,7 +307,7 @@ func main() {
 	}
 
 	//fmt.Println(tx.Nonce)
-
-	response := rpc.Connect(tx)
-	fmt.Println(response)
+	fmt.Println(tx.Nonce)
+	//response := rpc.Connect(tx)
+	//fmt.Println(response)
 }
