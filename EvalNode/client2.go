@@ -1,5 +1,4 @@
 package main
-
 import (
 	"bytes"
 	"encoding/asn1"
@@ -22,13 +21,15 @@ import (
 	//"github.com/hyperledger/fabric/core/crypto"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
 	"github.com/hyperledger/fabric/core/crypto/primitives/ecies"
+	"github.com/hyperledger/fabric/core/util"
 	pb "github.com/hyperledger/fabric/protos"
 	"tool/loadKey"
-//	"tool/rpc"
+	"tool/rpc"
 	"tool/initViper"
 )
 
 const (
+	info = "1600b975353e233708899a3b0ff8da55418f0738ef47f4a22d84b90da481d31261432209f1e7c4767dd2c400d685f4c96d41493e4576a52e41aaa36b142eaf81"
 	localStore string = "/var/hyperledger/production/client/"
 )
 
@@ -99,35 +100,34 @@ func DeployChaincodeSpec() (*pb.ChaincodeSpec, error) {
 	return &spec, nil
 }
 
-func InvokeChaincodeSpec() (*pb.ChaincodeSpec, error) {
+func InvokeChaincodeSpec() (*pb.ChaincodeInvocationSpec, error) {
 	var spec pb.ChaincodeSpec
 	//var spec2 pb.ChaincodeSpec
 	t := &params{
 		1,
 		map[string]string{"name": info},
 		ctorMsg{"invoke", []string{"a", "b", "1"}},
-		"lukas"
-	}
+		"lukas"}
 	b, err := json.Marshal(t)
 	if err != nil {
-		fmt.Printf("Error raised: %v", err)
+		panic(fmt.Errorf("Error raised: %v", err))
 		return nil, err
 	}
 
 	tmp, err := ioutil.ReadAll(bytes.NewBuffer(b))
 	if err != nil {
-		fmt.Println("Read error: %v", err)
+		panic(fmt.Errorf("Read error: %v", err))
 		return nil, err
 	}
 	//fmt.Println(b, bytes.NewBuffer(b))
 	err = json.Unmarshal(tmp, &spec)
 	if err != nil {
-		fmt.Printf("pb unmarshal error: %v", err)
+		panic(fmt.Errorf("pb unmarshal error: %v", err))
 		os.Exit(0)
 	}
-	spec.ConfidentialityLevel = pb.ConfidentialityLevel_CONFIDENTIAL
+	//spec.ConfidentialityLevel = pb.ConfidentialityLevel_CONFIDENTIAL
 	//fmt.Println(spec2)
-	return &spec, nil
+	return &pb.ChaincodeInvocationSpec{&spec, ""}, nil
 
 }
 
@@ -147,6 +147,37 @@ func getChaincodeBytes(context context.Context, spec *pb.ChaincodeSpec) (*pb.Cha
 func getMetadata(chaincodeSpec *pb.ChaincodeSpec) ([]byte, error) {
 	return chaincodeSpec.Metadata, nil
 }
+
+
+func CreateInvokeTx(chaincodeInvocation *pb.ChaincodeInvocationSpec, uuid string, nonce []byte, attrs ...string) (*pb.Transaction, error) {
+	tx, err := pb.NewChaincodeExecute(chaincodeInvocation, uuid, pb.Transaction_CHAINCODE_INVOKE)
+	if err != nil {
+		fmt.Println("Failed creating new transaction")
+		return nil, err
+	}
+	tx.Metadata, err = getMetadata(chaincodeInvocation.GetChaincodeSpec())
+	if err != nil {
+		fmt.Println("Failed loading Metadata")
+		return nil, err
+	}
+	if nonce == nil {
+		tx.Nonce, err = primitives.GetRandomNonce()
+		if err != nil {
+			fmt.Println("Failed generating Nonce")
+			return nil, err
+		}
+	} else {
+		tx.Nonce = nonce
+	}
+	//tx.ConfidentialityLevel = pb.ConfidentialityLevel_CONFIDENTIAL
+	//tx.ConfidentialityProtocolVersion = "1.2"
+	//err = encryptTx(tx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	return tx, nil
+}
+
 
 func CreateDeployTx(chaincodeDeploymentSpec *pb.ChaincodeDeploymentSpec, uuid string, nonce []byte, attrs ...string) (*pb.Transaction, error) {
 	tx, err := pb.NewChaincodeDeployTransaction(chaincodeDeploymentSpec, uuid)
@@ -187,19 +218,31 @@ func encryptTx(tx *pb.Transaction) error {
 
 	var (
 		stateKey   []byte
-		privaBytes []byte
+		privBytes []byte
 	)
 
-	stateKey, err = primitives.GenAESKey()
-	if err != nil {
-		panic(fmt.Errorf("Failed creating state key: %v\n", err))
-		return err
-	}
+	switch tx.Type {
+		case pb.Transaction_CHAINCODE_DEPLOY:
+		  stateKey, err = primitives.GenAESKey()
+		  if err != nil {
+			panic(fmt.Errorf("Failed creating state key: %v\n", err))
+			return err
+		  }
 
-	privaBytes, err = eciesSPI.SerializePrivateKey(ccPrivateKey)
-	if err != nil {
-		panic(fmt.Errorf("Failed serializing chaincode key: %v\n", err))
-		return err
+		  privBytes, err = eciesSPI.SerializePrivateKey(ccPrivateKey)
+		  if err != nil {
+			panic(fmt.Errorf("Failed serializing chaincode key: %v\n", err))
+			return err
+		  }
+		  break
+
+		case pb.Transaction_CHAINCODE_INVOKE:
+		  stateKey   = make([]byte, 0)
+		  privBytes, err = eciesSPI.SerializePrivateKey(ccPrivateKey)
+		  if err != nil {
+			return err
+		  }
+		  break
 	}
 
 	chainPublicKey, err := loadKey.LoadKey()
@@ -211,7 +254,7 @@ func encryptTx(tx *pb.Transaction) error {
 
 	cipher, err := eciesSPI.NewAsymmetricCipherFromPublicKey(chainPublicKey)
 
-	msgToValidators, err := asn1.Marshal(chainCodeValidatorMessage1_2{privaBytes, stateKey})
+	msgToValidators, err := asn1.Marshal(chainCodeValidatorMessage1_2{privBytes, stateKey})
 	if err != nil {
 		panic(fmt.Errorf("Failed to preparing message to the validators: %v", err))
 	}
@@ -251,11 +294,11 @@ func encryptTx(tx *pb.Transaction) error {
 	return nil
 }
 
-func Sign(tx *pb.Transaction) error {
+func Sign(tx *pb.Transaction) (*pb.Transaction, error) {
 	enrollmentCert, privKey, err := loadKey.LoadEnrollment()
 	if err != nil {
 		fmt.Printf("Failed loading enrollment metieral")
-		return err
+		return nil, err
 	}
 
 	tx.Cert = enrollmentCert.Raw
@@ -263,18 +306,18 @@ func Sign(tx *pb.Transaction) error {
 	rawTx, err := proto.Marshal(tx)
 	if err != nil {
 		fmt.Printf("Failed marshaling tx: %v", err)
-		return err
+		return nil, err
 	}
 
 	rawSignature, err := primitives.ECDSASign(privKey, rawTx)
 	if err != nil {
 		fmt.Println("Failed Creating signature: %v", err)
-		return err
+		return nil, err
 	}
 
 	tx.Signature = rawSignature
 
-	return nil
+	return tx, nil
 }
 
 func main() {
@@ -283,31 +326,30 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("Error loading viper config file"))
 	}
-	spec, err := MakeAChaincodeSpec()
+	chaincodeInvocationSpec, err := InvokeChaincodeSpec()
 	if err != nil {
 		os.Exit(0)
 	}
-	fmt.Println(spec)
+	fmt.Println(chaincodeInvocationSpec)
 
-	chaincodeDeploymentSpec, err := getChaincodeBytes(context.Background(), spec)
-
-	if err != nil {
-		os.Exit(0)
-	}
-
-	tx, err := CreateDeployTx(chaincodeDeploymentSpec, chaincodeDeploymentSpec.ChaincodeSpec.ChaincodeID.Name, nil, spec.Attributes...)
 	if err != nil {
 		os.Exit(0)
 	}
 
-	err = Sign(tx)
+	tx, err := CreateInvokeTx(chaincodeInvocationSpec, util.GenerateUUID(), nil, chaincodeInvocationSpec.ChaincodeSpec.Attributes...)
+	if err != nil {
+		os.Exit(0)
+	}
+
+	tx, err = Sign(tx)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
 
 	//fmt.Println(tx.Nonce)
-	fmt.Println(tx.Nonce)
-	//response := rpc.Connect(tx)
-	//fmt.Println(response)
+	fmt.Println(tx)
+	response := rpc.Connect(tx)
+	fmt.Println(response)
 }
+
