@@ -1,5 +1,6 @@
 package main
 import (
+	"strcon"
 	"bytes"
 	"encoding/asn1"
 	"encoding/json"
@@ -320,7 +321,7 @@ func Sign(tx *pb.Transaction) (*pb.Transaction, error) {
 	return tx, nil
 }
 
-func main() {
+func SendInvokeTx() {
 	Init()
 	err := initViper.SetConfig()
 	if err != nil {
@@ -349,7 +350,20 @@ func main() {
 
 	//fmt.Println(tx.Nonce)
 	fmt.Println(tx)
-	response := rpc.Connect(tx)
-	fmt.Println(response)
+	_ = rpc.Connect(tx)
+	//fmt.Println(response)
 }
+
+func main() {
+	n, err := strconv.Atoi(os.Args[1])
+	
+
+
+
+
+
+
+}
+
+
 
