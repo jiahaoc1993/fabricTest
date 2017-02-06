@@ -1,6 +1,6 @@
 package main
 import (
-	"strcon"
+	"strconv"
 	"bytes"
 	"encoding/asn1"
 	"encoding/json"
@@ -321,7 +321,7 @@ func Sign(tx *pb.Transaction) (*pb.Transaction, error) {
 	return tx, nil
 }
 
-func SendInvokeTx() {
+func MakeInvokeTx() *pb.Transaction {
 	Init()
 	err := initViper.SetConfig()
 	if err != nil {
@@ -331,7 +331,7 @@ func SendInvokeTx() {
 	if err != nil {
 		os.Exit(0)
 	}
-	fmt.Println(chaincodeInvocationSpec)
+	//fmt.Println(chaincodeInvocationSpec)
 
 	if err != nil {
 		os.Exit(0)
@@ -348,18 +348,36 @@ func SendInvokeTx() {
 		os.Exit(0)
 	}
 
+	return tx
 	//fmt.Println(tx.Nonce)
-	fmt.Println(tx)
-	_ = rpc.Connect(tx)
+	//fmt.Println(tx)
+	//_ = rpc.Connect(tx)
 	//fmt.Println(response)
 }
 
 func main() {
 	n, err := strconv.Atoi(os.Args[1])
-	
+	c := make(chan int)
+	transactions := []*pb.Transaction{}
+	if err != nil {
+		panic(fmt.Errorf("Failed conversing args"))
+		}
+	for i := 0; i < n; i++ {
+		tx := MakeInvokeTx()
+		transactions = append(transactions, tx)
+	}
 
+	for _, tx := range transactions {
+		go func () {
+		   _ = rpc.Connect(tx)
+		   c <-1
+		}()
+		//fmt.Println(tx.Nonce)
+	}
 
-
+	for s := 0 ; s < n ; {
+		s += <-c
+	}
 
 
 
