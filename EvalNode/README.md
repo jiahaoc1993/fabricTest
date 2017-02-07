@@ -10,3 +10,5 @@ use the Tcert
 
 forget about deployment
 useing invoke!
+
+need something to mansure execution time
