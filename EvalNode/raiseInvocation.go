@@ -1,29 +1,30 @@
 package main
 import (
 	"strconv"
-	"bytes"
-	"encoding/asn1"
 	"encoding/json"
 	"fmt"
-	"github.com/hyperledger/fabric/core/container"
-	"crypto/rand"
-	"io/ioutil"
 	"os"
 	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
-	"github.com/hyperledger/fabric/core/crypto/primitives/ecies"
 	"github.com/hyperledger/fabric/core/util"
 	pb "github.com/hyperledger/fabric/protos"
 	"tool/loadKey"
 	"tool/rpc"
 	"tool/initViper"
 	"tool/transaction"
+	"time"
 )
 
 const (
 	localStore string = "/var/hyperledger/production/client/"
 )
+
+type response struct {
+	Name   string    `json:"name,omitempty"`
+	Amount string    `json:"amount,omitemty"`
+	Time   string    `json:"time,omitempty"`
+}
+
 
 type chainCodeValidatorMessage1_2 struct {
 	PrivateKey []byte
@@ -43,110 +44,6 @@ func Init() (err error) { //init the crypto layer
 }
 
 
-/*
-
-func getChaincodeBytes(context context.Context, spec *pb.ChaincodeSpec) (*pb.ChaincodeDeploymentSpec, error) {
-	var codePackageBytes []byte
-	var err error
-	codePackageBytes, err = container.GetChaincodePackageBytes(spec)
-	if err != nil {
-		return nil, err
-	}
-	chaincodeDeploymentSpec := &pb.ChaincodeDeploymentSpec{ChaincodeSpec: spec, CodePackage: codePackageBytes}
-	return chaincodeDeploymentSpec, nil
-}
-
-func getMetadata(chaincodeSpec *pb.ChaincodeSpec) ([]byte, error) {
-	return chaincodeSpec.Metadata, nil
-}
-
-
-func encryptTx(tx *pb.Transaction) error {
-	eciesSPI := ecies.NewSPI()
-	ccPrivateKey, err := eciesSPI.NewPrivateKey(rand.Reader, primitives.GetDefaultCurve())
-	if err != nil {
-		panic(fmt.Errorf("Failed generete chaincode keypair: %v\n", err))
-		return err
-	}
-
-	var (
-		stateKey   []byte
-		privBytes []byte
-	)
-
-	switch tx.Type {
-		case pb.Transaction_CHAINCODE_DEPLOY:
-		  stateKey, err = primitives.GenAESKey()
-		  if err != nil {
-			panic(fmt.Errorf("Failed creating state key: %v\n", err))
-			return err
-		  }
-
-		  privBytes, err = eciesSPI.SerializePrivateKey(ccPrivateKey)
-		  if err != nil {
-			panic(fmt.Errorf("Failed serializing chaincode key: %v\n", err))
-			return err
-		  }
-		  break
-
-		case pb.Transaction_CHAINCODE_INVOKE:
-		  stateKey   = make([]byte, 0)
-		  privBytes, err = eciesSPI.SerializePrivateKey(ccPrivateKey)
-		  if err != nil {
-			return err
-		  }
-		  break
-	}
-
-	chainPublicKey, err := loadKey.LoadKey()
-	if err != nil {
-		fmt.Println("error")
-	}
-
-	//fmt.Println("This is chainPublicKey: ", chainPublicKey.pub)
-
-	cipher, err := eciesSPI.NewAsymmetricCipherFromPublicKey(chainPublicKey)
-
-	msgToValidators, err := asn1.Marshal(chainCodeValidatorMessage1_2{privBytes, stateKey})
-	if err != nil {
-		panic(fmt.Errorf("Failed to preparing message to the validators: %v", err))
-	}
-
-	encMsgToValidators, err := cipher.Process(msgToValidators)
-	if err != nil {
-		panic(fmt.Errorf("Failed to encrypting message to the validators: %v", err))
-	}
-	tx.ToValidators = encMsgToValidators
-
-	//initilize a new cipher
-	cipher, err = eciesSPI.NewAsymmetricCipherFromPublicKey(ccPrivateKey.GetPublicKey())
-	if err != nil {
-		panic(fmt.Errorf("Failed initliazing encryption scheme: %v", err))
-	}
-
-	encryptedChaincodeID, err := cipher.Process(tx.ChaincodeID)
-	if err != nil {
-		panic(fmt.Errorf("Failed encrypting chaincodeID: %v", err))
-	}
-	tx.ChaincodeID = encryptedChaincodeID
-
-	encryptedPayload, err := cipher.Process(tx.Payload)
-	if err != nil {
-		panic(fmt.Errorf("Failed encrypting payload: %v", err))
-	}
-	tx.Payload = encryptedPayload
-
-	if len(tx.Metadata) != 0 {
-		encryptedMetadata, err := cipher.Process(tx.Metadata)
-		if err != nil {
-			panic(fmt.Errorf("Failed to encrypt metadata"))
-		}
-		tx.Metadata = encryptedMetadata
-	}
-
-	return nil
-}
-*/
 func Sign(tx *pb.Transaction) (*pb.Transaction, error) {
 	enrollmentCert, privKey, err := loadKey.LoadEnrollment()
 	if err != nil {
@@ -223,6 +120,34 @@ func MakeQueryTx() *pb.Transaction {
 	return tx
 }
 
+func QueryBeforeInvoke() {
+	var result response
+	query := MakeQueryTx()
+	res := rpc.Connect(query)
+	t := strconv.FormatInt(time.Now().UnixNano(), 10)
+	err := json.Unmarshal(res.Msg, &result)
+	if err != nil {
+		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
+	}
+	fmt.Printf("Start at time: %s, while account %s has amount %s\n", t, result.Name, result.Amount)
+
+}
+
+func QueryAfterInvoke() {
+	time.Sleep(5 * time.Second)
+	var result response
+	query := MakeQueryTx()
+	res := rpc.Connect(query)
+	err := json.Unmarshal(res.Msg, &result)
+	if err != nil {
+		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
+	}
+
+	fmt.Println("Account " + result.Name + " have amount " + result.Amount + " at time: "+result.Time)
+
+}
+
+
 
 func main() {
 	Init()
@@ -240,9 +165,12 @@ func main() {
 		tx := MakeInvokeTx()
 		transactions = append(transactions, tx)
 	}
-		query := MakeQueryTx()
+		//query := MakeQueryTx()
 		//transactions = append(transactions, query)
 //add a query transaction after finished ctrating invoke transactions
+	//query the current state first and set the time as well!
+	QueryBeforeInvoke()
+
 	for _, tx := range transactions {
 		go func () {
 		   _ = rpc.Connect(tx)
@@ -255,8 +183,8 @@ func main() {
 		s += <-c
 	}
 
-	response := rpc.Connect(query)
-	fmt.Println(response)
+	QueryAfterInvoke()
+
 }
 
 

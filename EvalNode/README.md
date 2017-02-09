@@ -12,3 +12,5 @@ forget about deployment
 useing invoke!
 
 need something to mansure execution time
+
+use another chaincode to do this!
