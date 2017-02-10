@@ -1,38 +1,39 @@
 ***************
-###Start at time: 1486732950328002849, while account b has amount 50
-###Account b have amount 50 at time: 1486732932669881990
-###Account b have amount 550 at time: 1486732958005054023
-###Account b have amount 1050 at time: 1486732966980301586
-###Account b have amount 1550 at time: 1486732997722253781
-###Account b have amount 1550 at time: 1486732997722253781
-###Account b have amount 1550 at time: 1486732997722253781
+###Start at time: 1486735973459650884, while account b has amount 10
+###Account b have amount 10 at time: 1486735956293299994
+###Account b have amount 510 at time: 1486735982156838030
 ***************
-###Start at time: 1486733384801313622, while account b has amount 1550
-###Account b have amount 1550 at time: 1486732997722253781
-###Account b have amount 2050 at time: 1486733393612565081
-###Account b have amount 2050 at time: 1486733393612565081
+###Start at time: 1486736159175216634, while account b has amount 510
+###Account b have amount 510 at time: 1486735982156838030
+###Account b have amount 1010 at time: 1486736167121516667
+###Account b have amount 1010 at time: 1486736167121516667
 ***************
-###Start at time: 1486733437360788143, while account b has amount 2050
-###Account b have amount 2050 at time: 1486733393612565081
-###Account b have amount 2550 at time: 1486733445077976693
+###Start at time: 1486737259528614937, while account b has amount 1010
+###Account b have amount 1010 at time: 1486736167121516667
+###Account b have amount 1510 at time: 1486737269208382928
 ***************
-###Start at time: 1486733476242643409, while account b has amount 2550
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
+###Start at time: 1486737352863009598, while account b has amount 1510
+###Account b have amount 1510 at time: 1486737269208382928
+###Account b have amount 2010 at time: 1486737361740827813
 ***************
-###Start at time: 1486733598338366331, while account b has amount 2550
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
+###Start at time: 1486737470916827440, while account b has amount 2010
+###Account b have amount 2010 at time: 1486737361740827813
+###Account b have amount 2510 at time: 1486737480455464539
 ***************
-###Start at time: 1486733779444588156, while account b has amount 2550
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
-###Account b have amount 2550 at time: 1486733445077976693
+###Start at time: 1486737689827686898, while account b has amount 2510
+###Account b have amount 2510 at time: 1486737480455464539
+***************
+###Start at time: 1486737721605636592, while account b has amount 3010
+###Account b have amount 3010 at time: 1486737694462450701
+***************
+###Start at time: 1486737800665379854, while account b has amount 3510
+###Account b have amount 3510 at time: 1486737731437339647
+###Account b have amount 4010 at time: 1486737809829576579
+***************
+###Start at time: 1486737857196566980, while account b has amount 4010
+###Account b have amount 4010 at time: 1486737809829576579
+###Account b have amount 4510 at time: 1486737867221078798
+***************
+###Start at time: 1486737924060118175, while account b has amount 4510
+###Account b have amount 4510 at time: 1486737867221078798
+###Account b have amount 5010 at time: 1486737933808908011

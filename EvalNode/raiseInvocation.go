@@ -177,17 +177,19 @@ func main() {
 	//query the current state first and set the time as well!
 	if n != 0 && os.Args[2] == "start" {
 		before := QueryBeforeInvoke()
-		fmt.Println(before)
+		fmt.Print(before)
 		_, err = f.WriteString(before)
 		if err != nil {
 		panic(err)
 		}
+
 
 		for i := 0; i < n; i++ {
 			tx := MakeInvokeTx()
 			transactions = append(transactions, tx)
 		}
 
+		time.Sleep(time.Second) // time out the batch
 		for _, tx := range transactions {
 			go func () {
 			_ = rpc.Connect(tx)
@@ -200,13 +202,16 @@ func main() {
 		for s := 0 ; s < n ; {
 			s += <-c
 		}
-	}
+	}else if os.Args[2] == "query"{
 
-	after := QueryAfterInvoke()
-	fmt.Println(after)
-	_, err = f.WriteString(after)
-	if err != nil {
-		panic(err)
+		after := QueryAfterInvoke()
+		fmt.Print(after)
+		_, err = f.WriteString(after)
+		if err != nil {
+			panic(err)
+		}
+	}else{
+	fmt.Println("Wrong Args! please!!")
 	}
 }
 

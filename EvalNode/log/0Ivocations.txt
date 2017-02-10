@@ -1,2 +1,0 @@
-###Account b have amount 0 at time: 1486732699631225390
-###Account b have amount 0 at time: 1486732699631225390
