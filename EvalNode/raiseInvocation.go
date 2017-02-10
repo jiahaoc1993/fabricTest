@@ -195,13 +195,11 @@ func main() {
 			_ = rpc.Connect(tx)
 			 c <-1
 			}()
-
-		//fmt.Println(tx.Nonce)
-	}
-
+		}
 		for s := 0 ; s < n ; {
 			s += <-c
 		}
+		//wait for thr processTransaction
 	}else if os.Args[2] == "query"{
 
 		after := QueryAfterInvoke()
