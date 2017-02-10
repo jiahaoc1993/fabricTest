@@ -129,7 +129,8 @@ func QueryBeforeInvoke() {
 	if err != nil {
 		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
 	}
-	fmt.Printf("Start at time: %s, while account %s has amount %s\n", t, result.Name, result.Amount)
+	fmt.Println("***************")
+	fmt.Printf("###Start at time: %s, while account %s has amount %s\n", t, result.Name, result.Amount)
 
 }
 
@@ -143,8 +144,7 @@ func QueryAfterInvoke() {
 		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
 	}
 
-	fmt.Println("Account " + result.Name + " have amount " + result.Amount + " at time: "+result.Time)
-
+	fmt.Println("###Account " + result.Name + " have amount " + result.Amount + " at time: "+result.Time)
 }
 
 
@@ -169,7 +169,9 @@ func main() {
 		//transactions = append(transactions, query)
 //add a query transaction after finished ctrating invoke transactions
 	//query the current state first and set the time as well!
-	QueryBeforeInvoke()
+	if n != 0 {
+		QueryBeforeInvoke()
+	}
 
 	for _, tx := range transactions {
 		go func () {
