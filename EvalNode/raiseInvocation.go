@@ -120,7 +120,8 @@ func MakeQueryTx() *pb.Transaction {
 	return tx
 }
 
-func QueryBeforeInvoke() {
+func QueryBeforeInvoke() string {
+	var log    string
 	var result response
 	query := MakeQueryTx()
 	res := rpc.Connect(query)
@@ -129,13 +130,14 @@ func QueryBeforeInvoke() {
 	if err != nil {
 		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
 	}
-	fmt.Println("***************")
-	fmt.Printf("###Start at time: %s, while account %s has amount %s\n", t, result.Name, result.Amount)
-
+	log = fmt.Sprintln("***************")
+	log = log + fmt.Sprintf("###Start at time: %s, while account %s has amount %s\n", t, result.Name, result.Amount)
+	return log
 }
 
-func QueryAfterInvoke() {
-	time.Sleep(5 * time.Second)
+func QueryAfterInvoke() string{
+	var log string
+	time.Sleep(2 * time.Second)
 	var result response
 	query := MakeQueryTx()
 	res := rpc.Connect(query)
@@ -144,7 +146,8 @@ func QueryAfterInvoke() {
 		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
 	}
 
-	fmt.Println("###Account " + result.Name + " have amount " + result.Amount + " at time: "+result.Time)
+	log = fmt.Sprintln("###Account " + result.Name + " have amount " + result.Amount + " at time: "+result.Time)
+	return log
 }
 
 
@@ -161,32 +164,50 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("Failed conversing args"))
 		}
-	for i := 0; i < n; i++ {
-		tx := MakeInvokeTx()
-		transactions = append(transactions, tx)
+
+	f, err := os.OpenFile("./log/"+ os.Args[1] +"Ivocations.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	if err != nil {
+		panic(err)
 	}
+	defer f.Close()
+
 		//query := MakeQueryTx()
 		//transactions = append(transactions, query)
 //add a query transaction after finished ctrating invoke transactions
 	//query the current state first and set the time as well!
-	if n != 0 {
-		QueryBeforeInvoke()
-	}
+	if n != 0 && os.Args[2] == "start" {
+		before := QueryBeforeInvoke()
+		fmt.Println(before)
+		_, err = f.WriteString(before)
+		if err != nil {
+		panic(err)
+		}
 
-	for _, tx := range transactions {
-		go func () {
-		   _ = rpc.Connect(tx)
-		   c <-1
-		}()
+		for i := 0; i < n; i++ {
+			tx := MakeInvokeTx()
+			transactions = append(transactions, tx)
+		}
+
+		for _, tx := range transactions {
+			go func () {
+			_ = rpc.Connect(tx)
+			 c <-1
+			}()
+
 		//fmt.Println(tx.Nonce)
 	}
 
-	for s := 0 ; s < n ; {
-		s += <-c
+		for s := 0 ; s < n ; {
+			s += <-c
+		}
 	}
 
-	QueryAfterInvoke()
-
+	after := QueryAfterInvoke()
+	fmt.Println(after)
+	_, err = f.WriteString(after)
+	if err != nil {
+		panic(err)
+	}
 }
 
 
