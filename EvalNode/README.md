@@ -14,3 +14,6 @@ useing invoke!
 need something to mansure execution time
 
 use another chaincode to do this!
+
+
+still have something to fullfill like use flag, add a loop to tell user when will stop, draw....

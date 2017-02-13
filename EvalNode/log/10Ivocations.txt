@@ -1,3 +1,0 @@
-***************
-###Start at time: 1486735955107989209, while account b has amount 0
-###Account b have amount 10 at time: 1486735956293299994
