@@ -13,6 +13,7 @@ import (
 	"tool/initViper"
 	"tool/transaction"
 	"time"
+	"flag"
 )
 
 const (
@@ -70,16 +71,12 @@ func Sign(tx *pb.Transaction) (*pb.Transaction, error) {
 	return tx, nil
 }
 
-func MakeInvokeTx() *pb.Transaction {
-	chaincodeInvocationSpec, err := transaction.InvokeChaincodeSpec()
+func MakeInvokeTx(chaincodeName string) *pb.Transaction {
+	chaincodeInvocationSpec, err := transaction.InvokeChaincodeSpec(chaincodeName)
 	if err != nil {
 		os.Exit(0)
 	}
 	//fmt.Println(chaincodeInvocationSpec)
-
-	if err != nil {
-		os.Exit(0)
-	}
 
 	tx, err := transaction.CreateInvokeTx(chaincodeInvocationSpec, util.GenerateUUID(), nil, chaincodeInvocationSpec.ChaincodeSpec.Attributes...)
 	if err != nil {
@@ -95,16 +92,13 @@ func MakeInvokeTx() *pb.Transaction {
 	return tx
 }
 
-func MakeQueryTx() *pb.Transaction {
-	chaincodeInvocationSpec, err := transaction.QueryChaincodeSpec()
+func MakeQueryTx(chaincodeName string) *pb.Transaction {
+	chaincodeInvocationSpec, err := transaction.QueryChaincodeSpec(chaincodeName)
 	if err != nil {
 		os.Exit(0)
 	}
 	//fmt.Println(chaincodeInvocationSpec)
 
-	if err != nil {
-		os.Exit(0)
-	}
 
 	tx, err := transaction.CreateQueryTx(chaincodeInvocationSpec, util.GenerateUUID(), nil, chaincodeInvocationSpec.ChaincodeSpec.Attributes...)
 	if err != nil {
@@ -120,98 +114,95 @@ func MakeQueryTx() *pb.Transaction {
 	return tx
 }
 
-func QueryBeforeInvoke() string {
-	var log    string
-	var result response
-	query := MakeQueryTx()
-	res := rpc.Connect(query)
-	t := strconv.FormatInt(time.Now().UnixNano(), 10)
-	err := json.Unmarshal(res.Msg, &result)
-	if err != nil {
-		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
-	}
-	log = fmt.Sprintln("***************")
-	log = log + fmt.Sprintf("###Start at time: %s, while account %s has amount %s\n", t, result.Name, result.Amount)
-	return log
+func WarnningMsg() string{
+//      var err error
+        var str string
+        str =  "Usage:\n     ./raiseInvocation [command]\n\n"
+        str += "Available Commands:\n"
+        str += "     invoke      Invoke the specified chaincode\n"
+        str += "     query       Query the specified chaincode \ni\n"
+        str += "Flags:\n     -n, --name string     Name of chaincode returned by the deploy teansaction"
+        return str
 }
 
-func QueryAfterInvoke() string{
-	var log string
-	time.Sleep(2 * time.Second)
-	var result response
-	query := MakeQueryTx()
-	res := rpc.Connect(query)
-	err := json.Unmarshal(res.Msg, &result)
-	if err != nil {
-		panic(fmt.Errorf("Failed unmarshaling json: %V\n", err))
-	}
 
-	log = fmt.Sprintln("###Account " + result.Name + " have amount " + result.Amount + " at time: "+result.Time)
-	return log
-}
 
 
 
 func main() {
-	Init()
+	var numOfTransactions int
+	var chaincodeName     string
+	var method	      string
+	flag.StringVar(&method, "m", "", "method of Execution")
+	flag.StringVar(&chaincodeName, "n", "", "Name of chaincode returned by the deploy transaction")
+	flag.IntVar(&numOfTransactions, "t", 1, "Number of transaction readly to send(dafault=1)")
+	Init()					//viper init
 	err := initViper.SetConfig()
 	if err != nil {
 		panic(fmt.Errorf("Error loading viper config file"))
 	}
-	n, err := strconv.Atoi(os.Args[1])
-	c := make(chan int)
-	transactions := []*pb.Transaction{}
-	if err != nil {
-		panic(fmt.Errorf("Failed conversing args"))
-		}
+	c := make(chan int)		       //main exit after all go rutines were lanuched
+	transactions := []*pb.Transaction{}    //array of transactiongs
 
-	f, err := os.OpenFile("./log/"+ os.Args[1] +"Ivocations.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-	if err != nil {
-		panic(err)
+	flag.Parse()
+
+	if chaincodeName == "" || method == ""{    //chaincode name must need
+		panic(fmt.Errorf("method of name of chaincode should not be empty"))
 	}
-	defer f.Close()
 
-		//query := MakeQueryTx()
-		//transactions = append(transactions, query)
-//add a query transaction after finished ctrating invoke transactions
-	//query the current state first and set the time as well!
-	if n != 0 && os.Args[2] == "start" {
-		before := QueryBeforeInvoke()
-		fmt.Print(before)
-		_, err = f.WriteString(before)
-		if err != nil {
-		panic(err)
-		}
+	if method == "invoke" {
+		var res response
+		var stateBefore, stateAfter int
+		var timeBefore, timeAfter float64
 
+			//check the current state before taking invocation!
+		query := MakeQueryTx(chaincodeName)
+		response := rpc.Connect(query)
+		_ = json.Unmarshal(response.Msg, &res)
+		stateBefore, _ = strconv.Atoi(res.Amount)
 
-		for i := 0; i < n; i++ {
-			tx := MakeInvokeTx()
+		for i := 0; i < numOfTransactions; i++ {
+			tx := MakeInvokeTx(chaincodeName)
 			transactions = append(transactions, tx)
 		}
 
 		time.Sleep(time.Second) // time out the batch
+		timeBefore = float64(time.Now().UnixNano())
 		for _, tx := range transactions {
 			go func () {
 			_ = rpc.Connect(tx)
 			 c <-1
 			}()
 		}
-		for s := 0 ; s < n ; {
+		for s := 0 ; s < numOfTransactions ; {
 			s += <-c
 		}
+
+		for i :=0; i < 10; i++ {
+			time.Sleep(2 * time.Second)
+			response = rpc.Connect(query)
+			if string(response.Status) == "SUCCESS" {
+			 _ = json.Unmarshal(response.Msg, &res)
+			stateAfter, _ = strconv.Atoi(res.Amount)
+			if stateAfter == numOfTransactions + stateBefore{
+					timeAfter, _ = strconv.ParseFloat(res.Time, 64)
+					spent := (timeAfter - float64(timeBefore))/1000000000
+					fmt.Printf("Execute %d transactions spent %d seconds", numOfTransactions, spent)
+					break
+					}else{
+						continue
+					}
+			}else{
+				fmt.Println(response)
+				continue
+			}
+		}//set a mark here
 		//wait for thr processTransaction
-	}else if os.Args[2] == "query"{
-
-		after := QueryAfterInvoke()
-		fmt.Print(after)
-		_, err = f.WriteString(after)
-		if err != nil {
-			panic(err)
-		}
-	}else{
-	fmt.Println("Wrong Args! please!!")
+	}else if method == "query"{
+		query := MakeQueryTx(chaincodeName)
+		response := rpc.Connect(query)
+		fmt.Println(response)
+	}else {
+		panic(fmt.Errorf(WarnningMsg()))
 	}
-}
-
-
-
+}//main
