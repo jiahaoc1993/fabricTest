@@ -181,27 +181,22 @@ func main() {
 		for i :=0; i < 10; i++ {
 			time.Sleep(2 * time.Second)
 			response = rpc.Connect(query)
-			if string(response.Status) == "SUCCESS" {
 			 _ = json.Unmarshal(response.Msg, &res)
 			stateAfter, _ = strconv.Atoi(res.Amount)
 			if stateAfter == numOfTransactions + stateBefore{
 					timeAfter, _ = strconv.ParseFloat(res.Time, 64)
 					spent := (timeAfter - float64(timeBefore))/1000000000
-					fmt.Printf("Execute %d transactions spent %d seconds", numOfTransactions, spent)
+					fmt.Printf("Execute %d transactions spent %.3f seconds\n", numOfTransactions, spent)
 					break
 					}else{
 						continue
 					}
-			}else{
-				fmt.Println(response)
-				continue
-			}
 		}//set a mark here
 		//wait for thr processTransaction
 	}else if method == "query"{
 		query := MakeQueryTx(chaincodeName)
 		response := rpc.Connect(query)
-		fmt.Println(response)
+		fmt.Println("Status: " + string(response.Status) + "," + "Msg: " + string(response.Msg))
 	}else {
 		panic(fmt.Errorf(WarnningMsg()))
 	}
