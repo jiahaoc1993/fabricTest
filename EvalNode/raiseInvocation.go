@@ -166,8 +166,8 @@ func main() {
 			transactions = append(transactions, tx)
 		}
 
-		time.Sleep(time.Second) // time out the batch
-		timeBefore = float64(time.Now().UnixNano())
+		time.Sleep( 2 * time.Second) // time out the batch
+		timeBefore = float64(time.Now().UnixNano()) // what if time is not synchronous?
 		for _, tx := range transactions {
 			go func () {
 			_ = rpc.Connect(tx)
@@ -183,16 +183,17 @@ func main() {
 			response = rpc.Connect(query)
 			 _ = json.Unmarshal(response.Msg, &res)
 			stateAfter, _ = strconv.Atoi(res.Amount)
-			if stateAfter == numOfTransactions + stateBefore{
+			if stateAfter == numOfTransactions + stateBefore {
 					timeAfter, _ = strconv.ParseFloat(res.Time, 64)
-					spent := (timeAfter - float64(timeBefore))/1000000000
+					spent := (timeAfter - float64(timeBefore)) / float64(time.Millisecond)
 					fmt.Printf("Execute %d transactions spent %.3f seconds\n", numOfTransactions, spent)
 					break
-					}else{
+					}else if i < 9{
 						continue
+					}else {
+						panic(fmt.Errorf("remote server run out of time to response!"))
 					}
-		}//set a mark here
-		//wait for thr processTransaction
+		}
 	}else if method == "query"{
 		query := MakeQueryTx(chaincodeName)
 		response := rpc.Connect(query)
