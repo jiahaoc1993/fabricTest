@@ -55,12 +55,12 @@ func InvokeChaincodeSpec(info string) (*pb.ChaincodeInvocationSpec, error) {
 }
 
 
-func QueryChaincodeSpec(info string) (*pb.ChaincodeInvocationSpec, error) {
+func QueryChaincodeSpec(info string, TT string) (*pb.ChaincodeInvocationSpec, error) {
 	var spec pb.ChaincodeSpec
 	t := &params{
 		1,
 		map[string]string{"name": info},
-		ctorMsg{"query", []string{"b"}},
+		ctorMsg{"query", []string{"b", TT}},
 		"lukas"}
 	b, err := json.Marshal(t)
 	if err != nil {

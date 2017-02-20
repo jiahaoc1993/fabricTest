@@ -92,8 +92,8 @@ func MakeInvokeTx(chaincodeName string) *pb.Transaction {
 	return tx
 }
 
-func MakeQueryTx(chaincodeName string) *pb.Transaction {
-	chaincodeInvocationSpec, err := transaction.QueryChaincodeSpec(chaincodeName)
+func MakeQueryTx(chaincodeName string, TT string) *pb.Transaction {
+	chaincodeInvocationSpec, err := transaction.QueryChaincodeSpec(chaincodeName, TT)
 	if err != nil {
 		os.Exit(0)
 	}
@@ -156,18 +156,18 @@ func main() {
 		var timeBefore, timeAfter float64
 
 			//check the current state before taking invocation!
-		query := MakeQueryTx(chaincodeName)
+		query := MakeQueryTx(chaincodeName, "now")
 		response := rpc.Connect(query)
 		_ = json.Unmarshal(response.Msg, &res)
 		stateBefore, _ = strconv.Atoi(res.Amount)
-
+		timeBefore , _ = strconv.ParseFloat(res.Time, 64)
 		for i := 0; i < numOfTransactions; i++ {
 			tx := MakeInvokeTx(chaincodeName)
 			transactions = append(transactions, tx)
 		}
 
 		time.Sleep( 2 * time.Second) // time out the batch
-		timeBefore = float64(time.Now().UnixNano()) // what if time is not synchronous?
+		timeBefore = timeBefore + float64(2 * time.Second) // 
 		for _, tx := range transactions {
 			go func () {
 			_ = rpc.Connect(tx)
@@ -185,7 +185,7 @@ func main() {
 			stateAfter, _ = strconv.Atoi(res.Amount)
 			if stateAfter == numOfTransactions + stateBefore {
 					timeAfter, _ = strconv.ParseFloat(res.Time, 64)
-					spent := (timeAfter - float64(timeBefore)) / float64(time.Millisecond)
+					spent := (timeAfter - timeBefore) / float64(time.Second)
 					fmt.Printf("Execute %d transactions spent %.3f seconds\n", numOfTransactions, spent)
 					break
 					}else if i < 9{
@@ -195,7 +195,7 @@ func main() {
 					}
 		}
 	}else if method == "query"{
-		query := MakeQueryTx(chaincodeName)
+		query := MakeQueryTx(chaincodeName, "state")
 		response := rpc.Connect(query)
 		fmt.Println("Status: " + string(response.Status) + "," + "Msg: " + string(response.Msg))
 	}else {
