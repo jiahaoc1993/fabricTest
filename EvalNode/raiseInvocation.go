@@ -157,6 +157,7 @@ func main() {
 
 			//check the current state before taking invocation!
 		query := MakeQueryTx(chaincodeName, "now")
+		finish  := MakeQueryTx(chaincodeName, "state")
 		response := rpc.Connect(query)
 		_ = json.Unmarshal(response.Msg, &res)
 		stateBefore, _ = strconv.Atoi(res.Amount)
@@ -180,7 +181,7 @@ func main() {
 
 		for i :=0; i < 10; i++ {
 			time.Sleep(2 * time.Second)
-			response = rpc.Connect(query)
+			response = rpc.Connect(finish)
 			 _ = json.Unmarshal(response.Msg, &res)
 			stateAfter, _ = strconv.Atoi(res.Amount)
 			if stateAfter == numOfTransactions + stateBefore {

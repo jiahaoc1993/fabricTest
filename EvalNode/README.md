@@ -17,3 +17,5 @@ use another chaincode to do this!
 
 
 still have something to fullfill like use flag, add a loop to tell user when will stop, draw....
+
+the spent time is longer than from executeOne to execDoneSync because time spent at sending txs will also be caculated!
