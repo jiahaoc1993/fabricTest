@@ -33,7 +33,7 @@ type chainCodeValidatorMessage1_2 struct {
 }
 
 
-func Init() (err error) { //init the crypto layer
+func Init() (err error) { //init the crypto layer or use crypto.Init()
 	securityLevel := 256
 	hashAlgorithm := "SHA3"
 	if err = primitives.InitSecurityLevel(hashAlgorithm, securityLevel); err != nil {
