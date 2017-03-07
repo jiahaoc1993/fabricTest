@@ -71,6 +71,32 @@ func Sign(tx *pb.Transaction) (*pb.Transaction, error) {
 	return tx, nil
 }
 
+func FakeSign(tx *pb.Transaction) (*pb.Transaction, error) {
+	enrollmentCert, privKey, err := loadKey.LoadFakeEnrollment()
+	if err != nil {
+		fmt.Printf("Failed loading enrollment metieral")
+		return nil, err
+	}
+
+	tx.Cert = enrollmentCert.Raw
+
+	rawTx, err := proto.Marshal(tx)
+	if err != nil {
+		fmt.Printf("Failed marshaling tx: %v", err)
+		return nil, err
+	}
+
+	rawSignature, err := primitives.ECDSASign(privKey, rawTx)
+	if err != nil {
+		fmt.Println("Failed Creating signature: %v", err)
+		return nil, err
+	}
+
+	tx.Signature = rawSignature
+
+	return tx, nil
+}
+
 func MakeInvokeTx(chaincodeName string, args []string) *pb.Transaction {
 	chaincodeInvocationSpec, err := transaction.InvokeChaincodeSpec(chaincodeName, args)
 	if err != nil {
@@ -113,6 +139,28 @@ func MakeQueryTx(chaincodeName string, args []string) *pb.Transaction {
 
 	return tx
 }
+
+func MakeFakeTx(chaincodeName string, args []string) *pb.Transaction {
+	chaincodeInvocationSpec, err := transaction.InvokeChaincodeSpec(chaincodeName, args)
+	if err != nil {
+		os.Exit(0)
+	}
+	//fmt.Println(chaincodeInvocationSpec)
+
+	tx, err := transaction.CreateInvokeTx(chaincodeInvocationSpec, util.GenerateUUID(), nil, chaincodeInvocationSpec.ChaincodeSpec.Attributes...)
+	if err != nil {
+		os.Exit(0)
+	}
+
+	tx, err = FakeSign(tx)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+
+	return tx
+}
+
 
 func WarnningMsg() string{
 //      var err error
@@ -162,7 +210,7 @@ func main() {
 			//check the current state before taking invocation!
 		query := MakeQueryTx(chaincodeName, []string{"b"})
 		finish  := MakeQueryTx(chaincodeName, []string{"b"})
-		response := rpc.Connect(query)
+		response := rpc.Connect(query,"172.22.28.145:7051")
 		_ = json.Unmarshal(response.Msg, &res)
 		stateBefore, _ = strconv.Atoi(res.Amount)
 		timeBefore , _ = strconv.ParseFloat(res.Time, 64)
@@ -171,7 +219,7 @@ func main() {
 		timeBefore = timeBefore + float64(2 * time.Second) // 
 		for _, tx := range transactions {
 			go func () {
-			_ = rpc.Connect(tx)
+			_ = rpc.Connect(tx, "172.22.28.145:7051")
 			 c <-1
 			}()
 		}
@@ -181,7 +229,7 @@ func main() {
 
 		for i :=0; i < 10; i++ {
 			time.Sleep(2 * time.Second)
-			response = rpc.Connect(finish)
+			response = rpc.Connect(finish,"172.22.28.145:7051")
 			 _ = json.Unmarshal(response.Msg, &res)
 			stateAfter, _ = strconv.Atoi(res.Amount)
 			if stateAfter == numOfTransactions + stateBefore {
@@ -198,11 +246,28 @@ func main() {
 	}else if method == "query"{
 		start := time.Now().UnixNano()
 		query := MakeQueryTx(chaincodeName, []string{"b"})
-		response := rpc.Connect(query)
+		response := rpc.RandomConnect(query)
 		fmt.Println("Status: " + string(response.Status) + "," + "Msg: " + string(response.Msg))
 		after := time.Now().UnixNano()
 		spent := float64(after - start) / 1000000000
 		fmt.Printf("spent: %f seconds\n",spent)
+	}else if method == "fake"{
+		for i := 0; i < numOfTransactions; i++ {
+			tx := MakeFakeTx(chaincodeName,[]string{"a","b","1"})
+			transactions = append(transactions, tx)
+		}
+
+		for _, tx := range transactions {
+			go func () {
+			response := rpc.RandomConnect(tx)
+			fmt.Println(response)
+			c <-1
+			}()
+		}
+		for s := 0 ; s < numOfTransactions ; {
+			s += <-c
+		}
+
 	}else {
 		panic(fmt.Errorf(WarnningMsg()))
 	}
