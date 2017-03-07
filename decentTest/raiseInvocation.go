@@ -181,9 +181,11 @@ func main() {
 	var numOfTransactions int
 	var chaincodeName     string
 	var method	      string
+	var timeout           int
 	flag.StringVar(&method, "m", "", "method of Execution")
 	flag.StringVar(&chaincodeName, "n", "", "Name of chaincode returned by the deploy transaction")
 	flag.IntVar(&numOfTransactions, "t", 1, "Number of transaction readly to send(dafault=1)")
+	flag.IntVar(&timeout, "timeout", 1, "fake transaction duration")
 	Init()					//viper init
 	err := initViper.SetConfig()
 	if err != nil {
@@ -257,15 +259,18 @@ func main() {
 			transactions = append(transactions, tx)
 		}
 
-		for _, tx := range transactions {
-			go func () {
-			response := rpc.RandomConnect(tx)
-			fmt.Println(response)
-			c <-1
-			}()
-		}
-		for s := 0 ; s < numOfTransactions ; {
-			s += <-c
+		for j:=0 ; j < timeout ; j++ {
+			for _, tx := range transactions {
+				go func () {
+				_ := rpc.RandomConnect(tx)
+				//fmt.Println(response)
+				c <-1
+				}()
+			}
+			for s := 0 ; s < numOfTransactions ; {
+				s += <-c
+			}
+			time.Sleep(1 * time.Second)
 		}
 
 	}else {
