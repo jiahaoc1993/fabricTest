@@ -13,7 +13,24 @@ import (
 )
 
 func loadEnrollmentKey() (*ecdsa.PrivateKey, error) {
-	path := "/var/hyperledger/production/crypto/client/lukas/ks/raw/enrollment.key"
+	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/enrollment.key"
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+		//panic(fmt.Errorf("Failed loading private key: %v", err))
+	}
+
+	privateKey, err := primitives.PEMtoPrivateKey(raw, nil)
+	if err != nil {
+		return nil, err
+		//panic(fmt.Errorf("Failed parsing private key: %v", err))
+	}
+	return privateKey.(*ecdsa.PrivateKey), nil
+
+}
+
+func loadFakeEnrollmentKey() (*ecdsa.PrivateKey, error) {
+	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/enrollment2.key"
 	raw, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -30,7 +47,7 @@ func loadEnrollmentKey() (*ecdsa.PrivateKey, error) {
 }
 
 func loadEnrollmentCertificate() (*x509.Certificate, []byte, error) {
-	path := "/var/hyperledger/production/crypto/client/lukas/ks/raw/enrollment.cert"
+	path := "/var/hyperledger/production/crypto/client/diego/ks/raw/enrollment.cert"
 	pem, err := ioutil.ReadFile(path)
 	if err != nil {
 		//panic(fmt.Errorf("Failed loading certificate: %v", err))
@@ -66,10 +83,26 @@ func LoadEnrollment() (*x509.Certificate, *ecdsa.PrivateKey, error) {
 	return cert, privKey, nil
 }
 
+func LoadFakeEnrollment() (*x509.Certificate, *ecdsa.PrivateKey, error) {
+	cert, _, err := loadEnrollmentCertificate()
+	if err != nil {
+		fmt.Printf("loadEnrollmentCertificate failed: %v\n", err)
+		return nil, nil, err
+	}
+
+	privKey, err := loadFakeEnrollmentKey() // private key
+	if err != nil {
+		fmt.Printf("loadEnrollmentKey failed: %v\n", err)
+		return nil, nil, err
+	}
+
+	return cert, privKey, nil
+}
+
 func LoadKey() (primitives.PublicKey, error) {
 	eciesSPI := ecies.NewSPI()
 
-	pathChainKey := "/var/hyperledger/production/crypto/client/lukas/ks/raw/chain.key"
+	pathChainKey := "/var/hyperledger/production/crypto/client/diego/ks/raw/chain.key"
 	raw, err := ioutil.ReadFile(pathChainKey)
 	if err != nil {
 		panic(fmt.Errorf("Failed loading private key: %v\n", err))

@@ -11,7 +11,7 @@ import (
 
 const (
 	//info string = "1600b975353e233708899a3b0ff8da55418f0738ef47f4a22d84b90da481d31261432209f1e7c4767dd2c400d685f4c96d41493e4576a52e41aaa36b142eaf81"
-	addr string = "http://10.0.2.15:7050"
+	addr string = "http://172.22.28.145:7050"
 	//info string = "0950f1683d36ebd721845444b9fd1b6e732bdc12650e2b0d9ea77f4a7b83856dd830e938ed6473f7398b2bb47f6b7a80dfbc12222409b9d8365d0d8f73064535"
 //	info string = "fcf53ff7f2a6204a4ec3d50943d7b8101853d5446a004659418b3c0621b1409fb24b825901ecc53b5927b535faca423098f88c1323eccf1bad658a9ad45a32ff"
 )
@@ -29,13 +29,13 @@ type ctorMsg struct {
 	Args	 []string	`json:"args,omitempty"`
 }
 
-func InvokeChaincodeSpec(info string) (*pb.ChaincodeInvocationSpec, error) {
+func InvokeChaincodeSpec(info string,args []string) (*pb.ChaincodeInvocationSpec, error) {
 	var spec pb.ChaincodeSpec
 	t := &params{
 		1,
 		map[string]string{"name": info},
-		ctorMsg{"invoke", []string{"a", "b", "1"}},
-		"lukas"}
+		ctorMsg{"invoke", args},
+		"diego"}
 	b, err := json.Marshal(t)
 	if err != nil {
 		fmt.Printf("Error raised: %v\n", err)
@@ -55,13 +55,13 @@ func InvokeChaincodeSpec(info string) (*pb.ChaincodeInvocationSpec, error) {
 }
 
 
-func QueryChaincodeSpec(info string, TT string) (*pb.ChaincodeInvocationSpec, error) {
+func QueryChaincodeSpec(info string, args []string) (*pb.ChaincodeInvocationSpec, error) {
 	var spec pb.ChaincodeSpec
 	t := &params{
 		1,
 		map[string]string{"name": info},
-		ctorMsg{"query", []string{"b", TT}},
-		"lukas"}
+		ctorMsg{"query", args},
+		"diego"}
 	b, err := json.Marshal(t)
 	if err != nil {
 		fmt.Printf("Error raised: %v\n", err)

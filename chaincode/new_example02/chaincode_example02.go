@@ -166,14 +166,16 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return nil, errors.New("Invalid query function name. Expecting \"query\"")
 	}
 	var A string // Entities
+	var T string
 	var err error
+	var t string
 
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
 	A = args[0]
-
+	T = args[1]
 	// Get the state from the ledger
 	Avalbytes, err := stub.GetState(A)
 	if err != nil {
@@ -186,20 +188,26 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return nil, errors.New(jsonResp)
 	}
 
+	if T == "state" {
 
-	time, err := stub.GetState("time")
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for time\"}"
-		return nil, errors.New(jsonResp)
+		t, err := stub.GetState("time")
+		if err != nil {
+			jsonResp := "{\"Error\":\"Failed to get state for time\"}"
+			return nil, errors.New(jsonResp)
+		}
+
+		if t == nil {
+			jsonResp := "{\"Error\":\"Nil amount for time \"}"
+			return nil, errors.New(jsonResp)
+		}
+	}else if T == "now" {
+
+		t = time.Now().UnixNano()
+	}else {
+			jsonResp := "{\"Error\":\"Nil amount for time \"}"
 	}
 
-	if time == nil {
-		jsonResp := "{\"Error\":\"Nil amount for time \"}"
-		return nil, errors.New(jsonResp)
-	}
-
-
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\",\"time\":\"" + string(time) + "\"}"
+	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\",\"time\":\"" + string(t) + "\"}"
 	fmt.Printf("Query Response:%s\n", jsonResp)
 	return []byte(jsonResp), nil
 }
