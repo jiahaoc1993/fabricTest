@@ -118,13 +118,10 @@ func LaunchAttack(n int, address string, tx *pb.Transaction){
 
 
 func main() {
-	var numOfTransactions int
 	var chaincodeName     string
 	var timeout           int
 	var dest	      string
-	a := make(chan int)
 	flag.StringVar(&chaincodeName, "n", "", "Name of chaincode returned by the deploy transaction")
-	flag.IntVar(&numOfTransactions, "t", 1, "Number of transaction readly to send(dafault=1)")
 	flag.IntVar(&timeout, "timeout", 1, "fake transaction duration")
 	flag.StringVar(&dest, "d","172.22.28.134:7051", "destination to launch attack")
 
@@ -145,16 +142,11 @@ func main() {
 	for tmp := now ; tmp.Before(end) ; {
 		select {
 			case <-ticker.C:
-				for i:= 0 ; i < numOfTransactions ; i++ {
-					go func(){
-						LaunchAttack(1000, dest, tx)
-						a <-1
-						}()
-				}
-				for sum := 0; sum < numOfTransactions; {
-						sum += <-a
-				}
-
+				start := time.Now()
+				LaunchAttack(1200, dest, tx)
+				end   := time.Now()
+				delta := end.Sub(start)
+				fmt.Printf("send 1200 txs per:%v\n", delta)
 			default:
 		}
 
