@@ -246,40 +246,17 @@ func main() {
 					}
 		}
 	}else if method == "query"{
-	   for j:=0 ; j < timeout ; j++ {
 		//start := time.Now().UnixNano()
-		query := MakeQueryTx(chaincodeName, []string{"b"})
-		responseTime := rpc.RandomConnect(query)
+		query := MakeQueryTx(chaincodeName, []string{"b","now"})
+		before := time.Now().UnixNano()
+		response := rpc.Connect(query, "172.22.28.134:7051")
 		//fmt.Println("Status: " + string(response.Status) + "," + "Msg: " + string(response.Msg))
 		//after := time.Now().UnixNano()
 		//spent := float64(after - start) / 1000000000
-		fmt.Printf("spent: %f seconds\n",responseTime)
-		}
-	}else if method == "fake"{
-		for i := 0; i < numOfTransactions; i++ {
-			tx := MakeFakeTx(chaincodeName,[]string{"a","b","1"})
-			transactions = append(transactions, tx)
-		}
-
-		ts := time.Now().UnixNano()
-		for ta:=time.Now().UnixNano() ; ta < ts + (time.Duration(timeout)*time.Second).Nanoseconds() ;  {
-			logs := time.Now().UnixNano()
-			for _, tx := range transactions {
-				go func () {
-				_ = rpc.Connect(tx, "172.22.28.134:7051")
-				//fmt.Println(response)
-				c <-1
-				}()
-			}
-			for s := 0 ; s < numOfTransactions ; {
-				s += <-c
-			}
-			loge := time.Now().UnixNano()
-			fmt.Println("spent",float64(loge-logs)/1000000000)
-			time.Sleep(100 * time.Millisecond)
-			ta = time.Now().UnixNano()
-		}
-
+		after := time.Now().UnixNano()
+		spent := float64(after-before)/1000000000
+		fmt.Println(response)
+		fmt.Println("Spent time :", spent)
 	}else {
 		panic(fmt.Errorf(WarnningMsg()))
 	}
