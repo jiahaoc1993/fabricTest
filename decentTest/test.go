@@ -6,6 +6,7 @@ import(
 )
 
 func main() {
+	fmt.Println(100/1000)
 	t := time.NewTicker(time.Second)
 	for i:=0 ; i< 10 ; i++{
 		select {
