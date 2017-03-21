@@ -24,8 +24,8 @@ func (t *GPCoinChaincode) Init(stub shim.ChaincodeStubInterface, function string
 
 	// Create ownership table
 	err := stub.CreateTable("GPCoinOwnership", []*shim.ColumnDefinition{
-		&shim.ColumnDefinition{Name: "GPCoin", Type: shim.ColumnDefinition_INT32, Key: false},
-		&shim.ColumnDefinition{Name: "USD", Type: shim.ColumnDefinition_INT32, Key: false},
+		&shim.ColumnDefinition{Name: "GPCoin", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "USD", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "Owner", Type: shim.ColumnDefinition_BYTES, Key: true},
 	})
 	if err != nil {
@@ -54,15 +54,15 @@ func (t *GPCoinChaincode) Init(stub shim.ChaincodeStubInterface, function string
 }
 
 
-func (t *GPCoinChaincode) charge(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	myLogger.Debug("Charging...")
+func (t *GPCoinChaincode) topup(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	myLogger.Debug("Topup...")
 
 	if len(args) != 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2")
 	}
 
-	tmp, _ := strconv.ParseInt(args[0], 10, 32)
-	amount := int32(tmp)
+	amount, _ := strconv.ParseFloat(args[0], 64)
+
 	owner, err := base64.StdEncoding.DecodeString(args[1])
 	if err != nil {
 		return nil, errors.New("Failed decodinf owner")
@@ -101,8 +101,15 @@ func (t *GPCoinChaincode) charge(stub shim.ChaincodeStubInterface, args []string
 	if len(row.Columns) == 0 {
 		return nil, errors.New("Can't find user")
 	}
-		coin   := row.Columns[0].GetInt32()
-		amount += row.Columns[1].GetInt32()
+		coinString   := row.Columns[0].GetString_()
+		USDString    := row.Columns[1].GetString_()
+
+
+		USD, _	:= strconv.ParseFloat(USDString, 64)
+		USD += amount
+
+		USDString   = strconv.FormatFloat(USD, 'f', 5, 64)
+
 		err = stub.DeleteRow(
 		"GpcoinOwnership",
 		[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
@@ -114,8 +121,8 @@ func (t *GPCoinChaincode) charge(stub shim.ChaincodeStubInterface, args []string
 
 	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
 		Columns: []*shim.Column{
-			&shim.Column{Value: &shim.Column_Int32{Int32: coin}},
-			&shim.Column{Value: &shim.Column_Int32{Int32: amount}},
+			&shim.Column{Value: &shim.Column_String_{String_: coinString}},
+			&shim.Column{Value: &shim.Column_String_{String_: USDString}},
 			&shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
 	})
 
@@ -130,8 +137,8 @@ func (t *GPCoinChaincode) charge(stub shim.ChaincodeStubInterface, args []string
 
 
 
-func (t *GPCoinChaincode) buy(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	myLogger.Debug("Charging...")
+func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	myLogger.Debug("invest...")
 
 	if len(args) != 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2")
@@ -150,8 +157,7 @@ func (t *GPCoinChaincode) buy(stub shim.ChaincodeStubInterface, args []string) (
 		return nil, errors.New("The caller is not an administrator")
 	}
 
-	tmp, _ := strconv.ParseInt(args[0], 10, 32)// always returns int64
-	amount := int32(tmp)
+	amount, _ := strconv.ParseFloat(args[0], 64)// always returns Float64
 	owner, err := base64.StdEncoding.DecodeString(args[1])
 	if err != nil {
 		return nil, errors.New("Failed decodinf owner")
@@ -172,18 +178,27 @@ func (t *GPCoinChaincode) buy(stub shim.ChaincodeStubInterface, args []string) (
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	if len(row.Columns) != 0 {
-		if amount > row.Columns[1].GetInt32(){
+	if len(row.Columns) == 0 {
+		return nil, errors.New("We don't have this users.")
+
+	}
+		USDString := row.Columns[1].GetString_()
+		coinString := row.Columns[0].GetString_()
+
+		USD,_ := strconv.ParseFloat(USDString, 64)
+		coin,_ := strconv.ParseFloat(coinString, 64)
+
+		if amount > USD {
 			return nil, errors.New("You don't have enough money!")
 		}
-	}else {
-		return nil, errors.New("We don't have this users.")
-	}
 
-		coin  := row.Columns[0].GetInt32()
-		coin  += amount / 10
+		coin  += amount / 123
 
-		amount = row.Columns[1].GetInt32() - amount
+		USD -= amount
+
+		USDString   = strconv.FormatFloat(USD, 'f', 5, 64)
+
+		coinString   = strconv.FormatFloat(coin, 'f', 5, 64)
 
 		err = stub.DeleteRow(
 		"GpcoinOwnership",
@@ -195,8 +210,8 @@ func (t *GPCoinChaincode) buy(stub shim.ChaincodeStubInterface, args []string) (
 
 	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
 		Columns: []*shim.Column{
-			&shim.Column{Value: &shim.Column_Int32{Int32: coin}},
-			&shim.Column{Value: &shim.Column_Int32{Int32: amount}},
+			&shim.Column{Value: &shim.Column_String_{String_: coinString}},
+			&shim.Column{Value: &shim.Column_String_{String_: USDString}},
 			&shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
 	})
 
@@ -217,8 +232,7 @@ func (t *GPCoinChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
 	}
 
-	tmp, _ := strconv.ParseInt(args[0], 10, 32)
-	amount := int32(tmp)
+	amount, _ := strconv.ParseFloat(args[0], 64)
 
 	from, err := base64.StdEncoding.DecodeString(args[1])
 	if err != nil {
@@ -272,19 +286,29 @@ func (t *GPCoinChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 	fromResult := row1
 	toResult   := row2
 
-	if len(fromResult.Columns) != 0 && len(toResult.Columns) !=0 {
-		if amount > fromResult.Columns[0].GetInt32(){
-			return nil, errors.New("You don't have enough coin!")
-		}
-	}else{
+	if len(fromResult.Columns) == 0 || len(toResult.Columns) ==0 {
 		return nil, errors.New("We can't find one of users!")
 	}
+		fromCoinString := fromResult.Columns[0].GetString_()
+		toCoinString   :=  toResult.Columns[0].GetString_()
 
-		fromCoin := fromResult.Columns[0].GetInt32() - amount
-		toCoin   :=  toResult.Columns[0].GetInt32() + amount
+		fromCoin, _ := strconv.ParseFloat(fromCoinString, 64)
+		toCoin, _   := strconv.ParseFloat(toCoinString, 64)
 
-		fromUSD  := fromResult.Columns[1].GetInt32()
-		toUSD    := toResult.Columns[1].GetInt32()
+		if amount > fromCoin{
+			return nil, errors.New("You don't have enough coin!")
+		}
+
+		fromCoin -= amount
+		toCoin   += amount
+
+		fromUSDString  := fromResult.Columns[1].GetString_()
+		toUSDString    := toResult.Columns[1].GetString_()
+
+
+
+		fromCoinString = strconv.FormatFloat(fromCoin, 'f', 5, 64)
+		toCoinString   = strconv.FormatFloat(toCoin, 'f', 5, 64)
 
 		err = stub.DeleteRow(
 		"GpcoinOwnership",
@@ -305,8 +329,8 @@ func (t *GPCoinChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 
 		ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
 		Columns: []*shim.Column{
-			&shim.Column{Value: &shim.Column_Int32{Int32: fromCoin}},
-			&shim.Column{Value: &shim.Column_Int32{Int32: fromUSD}},
+			&shim.Column{Value: &shim.Column_String_{String_: fromCoinString}},
+			&shim.Column{Value: &shim.Column_String_{String_: fromUSDString}},
 			&shim.Column{Value: &shim.Column_Bytes{Bytes: from}}},
 		})
 
@@ -316,8 +340,8 @@ func (t *GPCoinChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 
 		ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
 			Columns: []*shim.Column{
-			&shim.Column{Value: &shim.Column_Int32{Int32: toCoin}},
-			&shim.Column{Value: &shim.Column_Int32{Int32: toUSD}},
+			&shim.Column{Value: &shim.Column_String_{String_: toCoinString}},
+			&shim.Column{Value: &shim.Column_String_{String_: toUSDString}},
 			&shim.Column{Value: &shim.Column_Bytes{Bytes: to}}},
 		})
 
@@ -385,14 +409,14 @@ func (t *GPCoinChaincode) isCaller(stub shim.ChaincodeStubInterface, certificate
 func (t *GPCoinChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	// Handle different functions
-	if function == "buy" {
+	if function == "invest" {
 		// Assign ownership
-		return t.buy(stub, args)
+		return t.invest(stub, args)
 	} else if function == "transfer" {
 		// Transfer ownership
 		return t.transfer(stub, args)
-	}else if function == "charge"{
-		return t.charge(stub, args)
+	}else if function == "topup"{
+		return t.topup(stub, args)
 	}
 
 	return nil, errors.New("Received unknown function invocation")
@@ -429,8 +453,14 @@ func (t *GPCoinChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 //	myLogger.Debugf("Query done [% x]", row.Columns[1].GetBytes())
 
+	var result string
+	if len(row.Columns) != 0 {
+	fmt.Sprintf(result,"[%x] has %s GpCoins, %s USD", row.Columns[2].GetBytes(), row.Columns[0].GetString_(), row.Columns[1].GetString_())
+	}else{
+		result = "No ansawer!"
+	}
 
-	return row.Columns[3].GetBytes(), nil
+	return []byte(result), nil
 }
 
 func main() {
