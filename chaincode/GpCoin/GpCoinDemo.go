@@ -109,12 +109,10 @@ func (t *GPCoinChaincode) topup(stub shim.ChaincodeStubInterface, args []string)
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	if len(row.Columns) == 0 {
-		return nil, errors.New("Can't find user")
-	}
+	if len(row.Columns) != 0 {
+
 		coinString   := row.Columns[0].GetString_()
 		USDString    := row.Columns[1].GetString_()
-
 
 		USD, _	:= strconv.ParseFloat(USDString, 64)
 		USD += amount
@@ -128,7 +126,7 @@ func (t *GPCoinChaincode) topup(stub shim.ChaincodeStubInterface, args []string)
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
-
+	}
 
 	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
 		Columns: []*shim.Column{
@@ -189,10 +187,8 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	if len(row.Columns) == 0 {
-		return nil, errors.New("We don't have this users.")
+	if len(row.Columns) != 0 {
 
-	}
 
 	//update the account
 		USDString := row.Columns[1].GetString_()
@@ -220,6 +216,7 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
+	}
 
 	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
 		Columns: []*shim.Column{
@@ -232,12 +229,12 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 		return nil, errors.New("Charge was already done.")
 	}
 
-	//don't forget the Gp account !  GPAccount from here 
+	//don't forget the Gp account !  adminCertificate from here 
 
-	GPAccount, _ := stub.GetState("admin")
+	//adminCertificate, _ := stub.GetState("admin")
 
 	var GPcolumns []shim.Column
-	GPcol := shim.Column{Value: &shim.Column_Bytes{Bytes: GPAccount}}
+	GPcol := shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}
 	GPcolumns = append(GPcolumns, GPcol)
 
 	GProw, err := stub.GetRow("GPCoinOwnerShip", GPcolumns)
@@ -263,7 +260,7 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 
 	err = stub.DeleteRow(
 	"GpcoinOwnership",
-	[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: GPAccount}}},
+	[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
 	)
 
 	if err != nil {
@@ -274,7 +271,7 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: GPCoinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: GPUSDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: GPAccount}}},
+			&shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
 	})
 
 	if !ok && err == nil {
@@ -329,10 +326,7 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	if len(row.Columns) == 0 {
-		return nil, errors.New("We don't have this users.")
-
-	}
+	if len(row.Columns) != 0 {
 
 	//update the account
 		USDString := row.Columns[1].GetString_()
@@ -362,7 +356,7 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
-
+	}
 	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: coinString}},
@@ -374,12 +368,12 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 		return nil, errors.New("Charge was already done.")
 	}
 
-	//don't forget the Gp account !  GPAccount from here 
+	//don't forget the Gp account !  adminCertificate from here 
 
-	GPAccount, _ := stub.GetState("admin")
+	//adminCertificate, _ := stub.GetState("admin")
 
 	var GPcolumns []shim.Column
-	GPcol := shim.Column{Value: &shim.Column_Bytes{Bytes: GPAccount}}
+	GPcol := shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}
 	GPcolumns = append(GPcolumns, GPcol)
 
 	GProw, err := stub.GetRow("GPCoinOwnerShip", GPcolumns)
@@ -403,7 +397,7 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 	GPCoinString   = strconv.FormatFloat(GPCoin, 'f', 5, 64)
 	err = stub.DeleteRow(
 	"GpcoinOwnership",
-	[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: GPAccount}}},
+	[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
 	)
 
 	if err != nil {
@@ -414,7 +408,7 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: GPCoinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: GPUSDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: GPAccount}}},
+			&shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
 	})
 
 	if !ok && err == nil {
