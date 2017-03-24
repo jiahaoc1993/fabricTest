@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/base64"
+//	"encoding/base64"
 	"errors"
 	"fmt"
 
@@ -96,17 +96,8 @@ func initCryptoClients() error {
 	if err != nil {
 		return err
 	}
+	return err
 
-	// Dave as binhn
-	if err := crypto.RegisterClient("binhn", nil, "binhn", "7avZQLwcUe9q"); err != nil {
-		return err
-	}
-	dave, err = crypto.InitClient("binhn", nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func processTransaction(tx *pb.Transaction) (*pb.Response, error) {
@@ -156,7 +147,7 @@ func deployInternal(deployer crypto.Client, adminCert crypto.CertificateHandler)
 	return
 }
 
-func investInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, investor crypto.CertificateHandler) (resp *pb.Response, err error) {
+func investInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, investor string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -173,7 +164,7 @@ func investInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler
 	}
 
 	chaincodeInput := &pb.ChaincodeInput{
-		Args: util.ToChaincodeArgs("invest", amount, base64.StdEncoding.EncodeToString(investor.GetCertificate())),
+		Args: util.ToChaincodeArgs("invest", amount, investor),
 	}
 	chaincodeInputRaw, err := proto.Marshal(chaincodeInput)
 	if err != nil {
@@ -206,7 +197,7 @@ func investInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler
 	return processTransaction(transaction)
 }
 
-func cashoutInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, cashouter crypto.CertificateHandler) (resp *pb.Response, err error) {
+func cashoutInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, cashouter string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -223,7 +214,7 @@ func cashoutInternal(invoker crypto.Client, invokerCert crypto.CertificateHandle
 	}
 
 	chaincodeInput := &pb.ChaincodeInput{
-		Args: util.ToChaincodeArgs("cashout", amount, base64.StdEncoding.EncodeToString(cashouter.GetCertificate())),
+		Args: util.ToChaincodeArgs("cashout", amount, cashouter),
 	}
 	chaincodeInputRaw, err := proto.Marshal(chaincodeInput)
 	if err != nil {
@@ -257,7 +248,7 @@ func cashoutInternal(invoker crypto.Client, invokerCert crypto.CertificateHandle
 }
 
 
-func topupInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, topupter crypto.CertificateHandler) (resp *pb.Response, err error) {
+func topupInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, topupter string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -274,7 +265,7 @@ func topupInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler,
 	}
 
 	chaincodeInput := &pb.ChaincodeInput{
-		Args: util.ToChaincodeArgs("topup", amount, base64.StdEncoding.EncodeToString(topupter.GetCertificate())),
+		Args: util.ToChaincodeArgs("topup", amount, topupter),
 	}
 	chaincodeInputRaw, err := proto.Marshal(chaincodeInput)
 	if err != nil {
@@ -307,7 +298,7 @@ func topupInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler,
 	return processTransaction(transaction)
 }
 
-func transferInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, from crypto.CertificateHandler, to crypto.CertificateHandler) (resp *pb.Response, err error) {
+func transferInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, from string, to string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -324,7 +315,7 @@ func transferInternal(invoker crypto.Client, invokerCert crypto.CertificateHandl
 	}
 
 	chaincodeInput := &pb.ChaincodeInput{
-		Args: util.ToChaincodeArgs("invest", amount, base64.StdEncoding.EncodeToString(from.GetCertificate()), base64.StdEncoding.EncodeToString(to.GetCertificate())),
+		Args: util.ToChaincodeArgs("invest", amount, from, to),
 	}
 
 	chaincodeInputRaw, err := proto.Marshal(chaincodeInput)

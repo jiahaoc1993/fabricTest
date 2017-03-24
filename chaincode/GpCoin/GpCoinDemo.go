@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/base64"
+	//"encoding/base64"
 	"errors"
 	"fmt"
 	"strconv"
@@ -11,6 +11,7 @@ import (
 	"github.com/op/go-logging"
 )
 
+
 var myLogger = logging.MustGetLogger("GPCoin")
 
 type GPCoinChaincode struct {
@@ -19,17 +20,28 @@ type GPCoinChaincode struct {
 func (t *GPCoinChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	myLogger.Debug("Init Chaincode...")
 	if len(args) != 0 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 0")
+		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
 	// Create ownership table
-	err := stub.CreateTable("GPCoinOwnership", []*shim.ColumnDefinition{
+	err := stub.CreateTable("GpCoinOwnerShip", []*shim.ColumnDefinition{
 		&shim.ColumnDefinition{Name: "GPCoin", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "USD", Type: shim.ColumnDefinition_STRING, Key: false},
-		&shim.ColumnDefinition{Name: "Owner", Type: shim.ColumnDefinition_BYTES, Key: true},
+		&shim.ColumnDefinition{Name: "Owner", Type: shim.ColumnDefinition_STRING, Key: true},
 	})
 	if err != nil {
 		return nil, errors.New("Failed creating GpcoinOnwership table.")
+	}
+
+	ok, err := stub.InsertRow("GpCoinOwnerShip", shim.Row{
+		Columns: []*shim.Column{
+			&shim.Column{Value: &shim.Column_String_{String_: "1000000.00000"}},
+			&shim.Column{Value: &shim.Column_String_{String_: "1000000.00000"}},
+			&shim.Column{Value: &shim.Column_String_{String_: "administrator"}}},
+	})
+
+	if !ok && err == nil {
+		return nil, errors.New("administrator is already inited.")
 	}
 
 	// Set the admin
@@ -48,17 +60,6 @@ func (t *GPCoinChaincode) Init(stub shim.ChaincodeStubInterface, function string
 
 	stub.PutState("admin", adminCert)
 
-	ok, err := stub.InsertRow("GPCoinOwnership", shim.Row{
-		Columns: []*shim.Column{
-			&shim.Column{Value: &shim.Column_String_{String_: "1000000.00000"}},
-			&shim.Column{Value: &shim.Column_String_{String_: "1000000.00000"}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: adminCert}}},
-	})
-
-	if !ok && err == nil {
-		return nil, errors.New("Charge was already done.")
-	}
-
 	myLogger.Debug("Init Chaincode...done")
 
 	return nil, nil
@@ -74,10 +75,8 @@ func (t *GPCoinChaincode) topup(stub shim.ChaincodeStubInterface, args []string)
 
 	amount, _ := strconv.ParseFloat(args[0], 64)
 
-	owner, err := base64.StdEncoding.DecodeString(args[1])
-	if err != nil {
-		return nil, errors.New("Failed decodinf owner")
-	}
+	owner :=args[1]
+
 
 	// Verify the identity of the caller
 	// Only an administrator can invoker assign
@@ -99,20 +98,24 @@ func (t *GPCoinChaincode) topup(stub shim.ChaincodeStubInterface, args []string)
 
 	//query first!
 	var columns []shim.Column
-	col1 := shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}
+	col1 := shim.Column{Value: &shim.Column_String_{String_: owner}}
 	columns = append(columns, col1)
 
-	row, err := stub.GetRow("GPCoinOwnerShip", columns)
+	row, err := stub.GetRow("GpCoinOwnerShip", columns)
 
 	if err != nil {
 		myLogger.Debugf("Failed retriving Owner")
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	if len(row.Columns) != 0 {
+	var coinString string = "0"
+	var USDString  string = args[0]
 
-		coinString   := row.Columns[0].GetString_()
-		USDString    := row.Columns[1].GetString_()
+
+	if row.GetColumns() != nil {
+
+		coinString   = row.Columns[0].GetString_()
+		USDString    = row.Columns[1].GetString_()
 
 		USD, _	:= strconv.ParseFloat(USDString, 64)
 		USD += amount
@@ -120,19 +123,19 @@ func (t *GPCoinChaincode) topup(stub shim.ChaincodeStubInterface, args []string)
 		USDString   = strconv.FormatFloat(USD, 'f', 5, 64)
 
 		err = stub.DeleteRow(
-		"GpcoinOwnership",
-		[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
+		"GpCoinOwnerShip",
+		[]shim.Column{shim.Column{Value: &shim.Column_String_{String_: owner}}},
 		)
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
 	}
 
-	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
+	ok, err = stub.InsertRow("GpCoinOwnerShip", shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: coinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: USDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
+			&shim.Column{Value: &shim.Column_String_{String_: owner}}},
 	})
 
 	if !ok && err == nil {
@@ -167,7 +170,7 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 	}
 
 	amount, _ := strconv.ParseFloat(args[0], 64)// always returns Float64
-	owner, err := base64.StdEncoding.DecodeString(args[1])
+	owner := args[1]
 	if err != nil {
 		return nil, errors.New("Failed decodinf owner")
 	}
@@ -177,19 +180,18 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 
 	//query first!
 	var columns []shim.Column
-	col1 := shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}
+	col1 := shim.Column{Value: &shim.Column_String_{String_: owner}}
 	columns = append(columns, col1)
 
-	row, err := stub.GetRow("GPCoinOwnerShip", columns)
-
+	row, err := stub.GetRow("GpCoinOwnerShip", columns)
 	if err != nil {
 		myLogger.Debugf("Failed retriving Owner")
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	if len(row.Columns) != 0 {
-
-
+	if row.GetColumns() == nil {
+		return nil, errors.New("We don't have this user")
+	}
 	//update the account
 		USDString := row.Columns[1].GetString_()
 		coinString := row.Columns[0].GetString_()
@@ -210,19 +212,19 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 		coinString   = strconv.FormatFloat(coin, 'f', 5, 64)
 
 		err = stub.DeleteRow(
-		"GpcoinOwnership",
-		[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
+		"GpCoinOwnerShip",
+		[]shim.Column{shim.Column{Value: &shim.Column_String_{String_: owner}}},
 		)
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
-	}
 
-	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
+
+	ok, err = stub.InsertRow("GpCoinOwnerShip", shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: coinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: USDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
+			&shim.Column{Value: &shim.Column_String_{String_: owner}}},
 	})
 
 	if !ok && err == nil {
@@ -234,10 +236,10 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 	//adminCertificate, _ := stub.GetState("admin")
 
 	var GPcolumns []shim.Column
-	GPcol := shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}
+	GPcol := shim.Column{Value: &shim.Column_String_{String_: "administrator"}}
 	GPcolumns = append(GPcolumns, GPcol)
 
-	GProw, err := stub.GetRow("GPCoinOwnerShip", GPcolumns)
+	GProw, err := stub.GetRow("GpCoinOwnerShip", GPcolumns)
 
 	if err != nil {
 		myLogger.Debugf("Failed retriving Owner")
@@ -259,19 +261,19 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 	GPCoinString  = strconv.FormatFloat(GPCoin, 'f', 5, 64)
 
 	err = stub.DeleteRow(
-	"GpcoinOwnership",
-	[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
+	"GpCoinOwnerShip",
+	[]shim.Column{shim.Column{Value: &shim.Column_String_{String_: "administrator"}}},
 	)
 
 	if err != nil {
 		return nil, errors.New("Failed deliting row.")
 	}
 
-	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
+	ok, err = stub.InsertRow("GpCoinOwnerShip", shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: GPCoinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: GPUSDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
+			&shim.Column{Value: &shim.Column_String_{String_: "administrator"}}},
 	})
 
 	if !ok && err == nil {
@@ -306,27 +308,26 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 	}
 
 	amount, _ := strconv.ParseFloat(args[0], 64)// always returns Float64
-	owner, err := base64.StdEncoding.DecodeString(args[1])
-	if err != nil {
-		return nil, errors.New("Failed decodinf owner")
-	}
+	owner := args[1]
 
 	// Register assignment
 	myLogger.Debugf("[% x] is buying %d", owner, amount)
 
 	//query first!
 	var columns []shim.Column
-	col1 := shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}
+	col1 := shim.Column{Value: &shim.Column_String_{String_: owner}}
 	columns = append(columns, col1)
 
-	row, err := stub.GetRow("GPCoinOwnerShip", columns)
+	row, err := stub.GetRow("GpCoinOwnerShip", columns)
 
 	if err != nil {
 		myLogger.Debugf("Failed retriving Owner")
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	if len(row.Columns) != 0 {
+	if row.GetColumns() == nil {
+		return nil, errors.New("We don't have this user")
+	}
 
 	//update the account
 		USDString := row.Columns[1].GetString_()
@@ -350,18 +351,18 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 		coinString   = strconv.FormatFloat(coin, 'f', 5, 64)
 
 		err = stub.DeleteRow(
-		"GpcoinOwnership",
-		[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
+		"GpCoinOwnerShip",
+		[]shim.Column{shim.Column{Value: &shim.Column_String_{String_: owner}}},
 		)
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
-	}
-	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
+
+	ok, err = stub.InsertRow("GpCoinOwnerShip", shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: coinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: USDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}},
+			&shim.Column{Value: &shim.Column_String_{String_: owner}}},
 	})
 
 	if !ok && err == nil {
@@ -373,10 +374,10 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 	//adminCertificate, _ := stub.GetState("admin")
 
 	var GPcolumns []shim.Column
-	GPcol := shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}
+	GPcol := shim.Column{Value: &shim.Column_String_{String_: "administrator"}}
 	GPcolumns = append(GPcolumns, GPcol)
 
-	GProw, err := stub.GetRow("GPCoinOwnerShip", GPcolumns)
+	GProw, err := stub.GetRow("GpCoinOwnerShip", GPcolumns)
 
 	if err != nil {
 		myLogger.Debugf("Failed retriving Owner")
@@ -396,19 +397,19 @@ func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []strin
 	GPUSDString   = strconv.FormatFloat(GPUSD, 'f', 5, 64)
 	GPCoinString   = strconv.FormatFloat(GPCoin, 'f', 5, 64)
 	err = stub.DeleteRow(
-	"GpcoinOwnership",
-	[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
+	"GpCoinOwnerShip",
+	[]shim.Column{shim.Column{Value: &shim.Column_String_{String_: "administrator"}}},
 	)
 
 	if err != nil {
 		return nil, errors.New("Failed deliting row.")
 	}
 
-	ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
+	ok, err = stub.InsertRow("GpCoinOwnerShip", shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: GPCoinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: GPUSDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: adminCertificate}}},
+			&shim.Column{Value: &shim.Column_String_{String_: "administrator"}}},
 	})
 
 	if !ok && err == nil {
@@ -430,15 +431,9 @@ func (t *GPCoinChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 
 	amount, _ := strconv.ParseFloat(args[0], 64)
 
-	from, err := base64.StdEncoding.DecodeString(args[1])
-	if err != nil {
-		return nil, errors.New("Failed decodinf owner")
-	}
+	from := args[1]
 
-	to, err := base64.StdEncoding.DecodeString(args[2])
-	if err != nil {
-		return nil, errors.New("Failed decodinf owner")
-	}
+	to := args[2]
 
 	// Verify the identity of the caller
 	// Only an administrator can invoker assign
@@ -461,19 +456,19 @@ func (t *GPCoinChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 	//query first!
 	var columns1 []shim.Column
 	var columns2 []shim.Column
-	col1 := shim.Column{Value: &shim.Column_Bytes{Bytes: from}}
-	col2 := shim.Column{Value: &shim.Column_Bytes{Bytes: to}}
+	col1 := shim.Column{Value: &shim.Column_String_{String_: from}}
+	col2 := shim.Column{Value: &shim.Column_String_{String_: to}}
 
 	columns1 = append(columns1, col1)
 	columns2 = append(columns2, col2)
 
-	row1, err := stub.GetRow("GPCoinOwnerShip", columns1)
+	row1, err := stub.GetRow("GpCoinOwnerShip", columns1)
 	if err != nil {
 		myLogger.Debugf("Failed retriving Owner")
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
 	}
 
-	row2, err := stub.GetRow("GPCoinOwnerShip", columns2)
+	row2, err := stub.GetRow("GpCoinOwnerShip", columns2)
 	if err != nil {
 		myLogger.Debugf("Failed retriving Owner")
 		return nil, fmt.Errorf("Failed retriving Owner [%d]: [%s]", amount, err)
@@ -507,38 +502,38 @@ func (t *GPCoinChaincode) transfer(stub shim.ChaincodeStubInterface, args []stri
 		toCoinString   = strconv.FormatFloat(toCoin, 'f', 5, 64)
 
 		err = stub.DeleteRow(
-		"GpcoinOwnership",
-		[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: from}}},
+		"GpCoinOwnerShip",
+		[]shim.Column{shim.Column{Value: &shim.Column_String_{String_: from}}},
 		)
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
 
 		err = stub.DeleteRow(
-		"GpcoinOwnership",
-		[]shim.Column{shim.Column{Value: &shim.Column_Bytes{Bytes: to}}},
+		"GpCoinOwnerShip",
+		[]shim.Column{shim.Column{Value: &shim.Column_String_{String_: to}}},
 		)
 		if err != nil {
 			return nil, errors.New("Failed deliting row.")
 		}
 
 
-		ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
+		ok, err = stub.InsertRow("GpCoinOwnerShip", shim.Row{
 		Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: fromCoinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: fromUSDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: from}}},
+			&shim.Column{Value: &shim.Column_String_{String_: from}}},
 		})
 
 		if !ok && err == nil {
 			return nil, errors.New("Charge was already done.")
 		}
 
-		ok, err = stub.InsertRow("GPCoinOwnership", shim.Row{
+		ok, err = stub.InsertRow("GpCoinOwnerShip", shim.Row{
 			Columns: []*shim.Column{
 			&shim.Column{Value: &shim.Column_String_{String_: toCoinString}},
 			&shim.Column{Value: &shim.Column_String_{String_: toUSDString}},
-			&shim.Column{Value: &shim.Column_Bytes{Bytes: to}}},
+			&shim.Column{Value: &shim.Column_String_{String_: to}}},
 		})
 
 		if !ok && err == nil {
@@ -631,25 +626,25 @@ func (t *GPCoinChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	}
 
 	// Who is the owner of the asset?
-	owner, err := base64.StdEncoding.DecodeString(args[0])
+	owner :=args[0]
 
 	//myLogger.Debugf("Arg [%s]", string(asset))
 
 	var columns []shim.Column
-	col1 := shim.Column{Value: &shim.Column_Bytes{Bytes: owner}}
+	col1 := shim.Column{Value: &shim.Column_String_{String_: owner}}
 	columns = append(columns, col1)
 
-	row, err := stub.GetRow("GPCoinOwnership", columns)
+	row, err := stub.GetRow("GpCoinOwnerShip", columns)
 	if err != nil {
 		myLogger.Debugf("Failed retriving asset [%s]: [%s]", string(owner), err)
 		return nil, fmt.Errorf("Failed retriving asset [%s]: [%s]", string(owner), err)
 	}
 
-//	myLogger.Debugf("Query done [% x]", row.Columns[1].GetBytes())
-
+//	myLogger.Debugf("Query done [% x]", row.Columns[1].GetString_())
 	var result string
-	if len(row.Columns) != 0 {
-	fmt.Sprintf(result,"[%x] has %s GpCoins, %s USD", row.Columns[2].GetBytes(), row.Columns[0].GetString_(), row.Columns[1].GetString_())
+
+	if row.GetColumns() != nil {
+		result = fmt.Sprintf("[%x] has %s GpCoins, %s USD", row.Columns[2].GetString_(), row.Columns[0].GetString_(), row.Columns[1].GetString_())
 	}else{
 		result = "No ansawer!"
 	}

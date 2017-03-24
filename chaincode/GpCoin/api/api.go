@@ -51,7 +51,7 @@ func deploy() (err error) {
 	// 4. Alice constructs a deploy transaction, as described in *application-ACL.md*,  setting the transaction
 	// metadata to *DER(CharlieCert)*.
 	// 5. Alice submits th	e transaction to the fabric network.
-	resp, err := deployInternal(alice, bobCert)
+	resp, err := deployInternal(bob, bobCert)
 	if err != nil {
 		appLogger.Errorf("Failed deploying [%s]", err)
 		return
@@ -69,13 +69,14 @@ func deploy() (err error) {
 func topup() (err error) {
 	appLogger.Debug("------------- topup...")
 	//charlie topUp 10000 USD
-	charlieCert, err = charlie.GetTCertificateHandlerNext()
-	if err != nil {
-		appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-		return
-	}
+	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
 
-	resp, err := topupInternal(bob, bobCert, "10000", charlieCert)
+	//if err != nil {
+	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
+	//	return
+	//}
+
+	resp, err := topupInternal(bob, bobCert, "10000", "charlieCert")
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -94,13 +95,13 @@ func topup() (err error) {
 func invest() (err error) {
 	appLogger.Debug("------------- invest...")
 	//charlie topUp 100 USD
-	charlieCert, err = charlie.GetTCertificateHandlerNext()
-	if err != nil {
-		appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-		return
-	}
+	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
+	//if err != nil {
+	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
+	//	return
+	//}
 
-	resp, err := investInternal(bob, bobCert, "1000", charlieCert)
+	resp, err := investInternal(bob, bobCert, "1000", "charlieCert")
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -119,13 +120,13 @@ func invest() (err error) {
 func cashout() (err error) {
 	appLogger.Debug("------------- cashout...")
 	//charlie topUp 10000 USD
-	charlieCert, err = charlie.GetTCertificateHandlerNext()
-	if err != nil {
-		appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-		return
-	}
+	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
+	//if err != nil {
+	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
+	//	return
+	//}
 
-	resp, err := topupInternal(bob, bobCert, "0.8", charlieCert)
+	resp, err := topupInternal(bob, bobCert, "0.8", "charlieCert")
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -143,19 +144,19 @@ func cashout() (err error) {
 func transfer() (err error) {
 	appLogger.Debug("------------- topup...")
 	//charlie topUp 10000 USD
-	charlieCert, err = charlie.GetTCertificateHandlerNext()
-	if err != nil {
-		appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-		return
-	}
+	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
+	//if err != nil {
+	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
+	//	return
+	//}
 
-	aliceCert, err = alice.GetTCertificateHandlerNext()
-	if err != nil {
-		appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-		return
-	}
+	//aliceCert, err = alice.GetTCertificateHandlerNext()
+	//if err != nil {
+	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
+	//	return
+	//}
 
-	resp, err := transferInternal(bob, bobCert, "1.5", charlieCert, aliceCert)
+	resp, err := transferInternal(bob, bobCert, "1.5", "charlieCert", "aliceCert")
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -219,7 +220,7 @@ func main() {
 	}
 
 	// Enable fabric 'confidentiality'
-	confidentiality(true)
+	confidentiality(false)
 
 	// Exercise the 'asset_management' chaincode
 	if err := testGPCoinChaincode(); err != nil {
