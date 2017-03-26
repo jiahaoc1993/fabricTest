@@ -230,12 +230,14 @@ func testGPCoinChaincode() (err error) {
 }
 
 */
-func check(n int, args []string) {
+func check(n int, args []string) err error{
 	if len(args) != n {
 
-		panic(fmt.Errorf("wrong args\n"))
+		err = fmt.Errorf("wrong args\n")
+		return
 	}
 
+	return nil
 }
 
 func main() {
