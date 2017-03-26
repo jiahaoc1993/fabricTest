@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	//"reflect"
 	"time"
 	"flag"
@@ -37,13 +38,6 @@ var (
 
 func deploy() (err error) {
 	appLogger.Debug("------------- Alice wants to assign the administrator role to Bob;")
-	// Deploy:
-	// 1. Alice is the deployer of the chaincode;
-	// 2. Alice wants to assign the administrator role to Bob;
-	// 3. Alice obtains, via an out-of-band channel, a TCert of Bob, let us call this certificate *BobCert*;
-
-	// 5. Alice submits th	e transaction to the fabric network.
-
 	bobCert, err = bob.GetEnrollmentCertificateHandler()
 	if err != nil {
 		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
@@ -56,8 +50,6 @@ func deploy() (err error) {
 	}
 
 	fmt.Println("chaincode name: ", resp)
-	//appLogger.Debugf("Resp [%s]", resp.String())
-	//appLogger.Debugf("Chaincode NAME: [%s]-[%s]", chaincodeName, string(resp.Msg))
 
 	appLogger.Debug("Wait 30 seconds")
 	time.Sleep(30 * time.Second)
@@ -66,13 +58,6 @@ func deploy() (err error) {
 
 func topup(chaincodeName string, amount string, user string) (err error) {
 	appLogger.Debug("------------- topup...")
-	//charlie topUp 10000 USD
-	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
-
-	//if err != nil {
-	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-	//	return
-	//}
 	bobCert, err = bob.GetEnrollmentCertificateHandler()
 	if err != nil {
 		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
@@ -97,12 +82,6 @@ func topup(chaincodeName string, amount string, user string) (err error) {
 
 func invest(chaincodeName string, amount string, user string) (err error) {
 	appLogger.Debug("------------- invest...")
-	//charlie topUp 100 USD
-	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
-	//if err != nil {
-	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-	//	return
-	//}
 
 	bobCert, err = bob.GetEnrollmentCertificateHandler()
 	if err != nil {
@@ -127,12 +106,6 @@ func invest(chaincodeName string, amount string, user string) (err error) {
 
 func cashout(chaincodeName string, amount string, user string) (err error) {
 	appLogger.Debug("------------- cashout...")
-	//charlie topUp 10000 USD
-	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
-	//if err != nil {
-	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-	//	return
-	//}
 
 	bobCert, err = bob.GetEnrollmentCertificateHandler()
 	if err != nil {
@@ -156,18 +129,6 @@ func cashout(chaincodeName string, amount string, user string) (err error) {
 
 func transfer(chaincodeName string, amount string, from string, to string) (err error) {
 	appLogger.Debug("------------- transfer...")
-	//charlie topUp 10000 USD
-	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
-	//if err != nil {
-	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-	//	return
-	//}
-
-	//aliceCert, err = alice.GetTCertificateHandlerNext()
-	//if err != nil {
-	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
-	//	return
-	//}
 
 
 	bobCert, err = bob.GetEnrollmentCertificateHandler()
