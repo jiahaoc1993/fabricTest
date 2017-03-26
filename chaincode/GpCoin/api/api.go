@@ -1,11 +1,11 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	"os"
 	//"reflect"
 	"time"
-
+	"flag"
 	"github.com/hyperledger/fabric/core/crypto"
 	pb "github.com/hyperledger/fabric/protos"
 	"github.com/op/go-logging"
@@ -42,31 +42,28 @@ func deploy() (err error) {
 	// 2. Alice wants to assign the administrator role to Bob;
 	// 3. Alice obtains, via an out-of-band channel, a TCert of Bob, let us call this certificate *BobCert*;
 
+	// 5. Alice submits th	e transaction to the fabric network.
 	bobCert, err = bob.GetTCertificateHandlerNext()
 	if err != nil {
 		appLogger.Errorf("Failed getting Bob TCert [%s]", err)
 		return
 	}
-
-	// 4. Alice constructs a deploy transaction, as described in *application-ACL.md*,  setting the transaction
-	// metadata to *DER(CharlieCert)*.
-	// 5. Alice submits th	e transaction to the fabric network.
 	resp, err := deployInternal(bob, bobCert)
 	if err != nil {
 		appLogger.Errorf("Failed deploying [%s]", err)
 		return
 	}
-	appLogger.Debugf("Resp [%s]", resp.String())
-	appLogger.Debugf("Chaincode NAME: [%s]-[%s]", chaincodeName, string(resp.Msg))
+
+	fmt.Println("chaincode name: ", resp)
+	//appLogger.Debugf("Resp [%s]", resp.String())
+	//appLogger.Debugf("Chaincode NAME: [%s]-[%s]", chaincodeName, string(resp.Msg))
 
 	appLogger.Debug("Wait 30 seconds")
 	time.Sleep(30 * time.Second)
-
-	appLogger.Debug("------------- Done!")
 	return
 }
 
-func topup() (err error) {
+func topup(chaincodeName string, amount string, user string) (err error) {
 	appLogger.Debug("------------- topup...")
 	//charlie topUp 10000 USD
 	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
@@ -76,7 +73,7 @@ func topup() (err error) {
 	//	return
 	//}
 
-	resp, err := topupInternal(bob, bobCert, "10000", "charlieCert")
+	resp, err := topupInternal(chaincodeName, bob, bobCert, amount, user)
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -84,7 +81,7 @@ func topup() (err error) {
 	appLogger.Debugf("Resp [%s]", resp.String())
 
 	appLogger.Debug("Wait 30 seconds")
-	time.Sleep(30 * time.Second)
+	//time.Sleep(30 * time.Second)
 
 
 	appLogger.Debug("------------- Done!")
@@ -92,7 +89,7 @@ func topup() (err error) {
 }
 
 
-func invest() (err error) {
+func invest(chaincodeName string, amount string, user string) (err error) {
 	appLogger.Debug("------------- invest...")
 	//charlie topUp 100 USD
 	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
@@ -101,7 +98,7 @@ func invest() (err error) {
 	//	return
 	//}
 
-	resp, err := investInternal(bob, bobCert, "1000", "charlieCert")
+	resp, err := investInternal(chaincodeName, bob, bobCert, amount, user)
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -109,7 +106,7 @@ func invest() (err error) {
 	appLogger.Debugf("Resp [%s]", resp.String())
 
 	appLogger.Debug("Wait 30 seconds")
-	time.Sleep(30 * time.Second)
+	//time.Sleep(30 * time.Second)
 
 
 	appLogger.Debug("------------- Done!")
@@ -117,7 +114,7 @@ func invest() (err error) {
 }
 
 
-func cashout() (err error) {
+func cashout(chaincodeName string, amount string, user string) (err error) {
 	appLogger.Debug("------------- cashout...")
 	//charlie topUp 10000 USD
 	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
@@ -126,7 +123,7 @@ func cashout() (err error) {
 	//	return
 	//}
 
-	resp, err := topupInternal(bob, bobCert, "0.8", "charlieCert")
+	resp, err := topupInternal(chaincodeName, bob, bobCert, amount, user)
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -134,15 +131,15 @@ func cashout() (err error) {
 	appLogger.Debugf("Resp [%s]", resp.String())
 
 	appLogger.Debug("Wait 30 seconds")
-	time.Sleep(30 * time.Second)
+	//time.Sleep(30 * time.Second)
 
 
 	appLogger.Debug("------------- Done!")
 	return
 }
 
-func transfer() (err error) {
-	appLogger.Debug("------------- topup...")
+func transfer(chaincodeName string, amount string, from string, to string) (err error) {
+	appLogger.Debug("------------- transfer...")
 	//charlie topUp 10000 USD
 	//"charlieCert", err = charlie.GetTCertificateHandlerNext()
 	//if err != nil {
@@ -156,7 +153,8 @@ func transfer() (err error) {
 	//	return
 	//}
 
-	resp, err := transferInternal(bob, bobCert, "1.5", "charlieCert", "aliceCert")
+
+	resp, err := transferInternal(chaincodeName, bob, bobCert, amount, from, to)
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -164,13 +162,13 @@ func transfer() (err error) {
 	appLogger.Debugf("Resp [%s]", resp.String())
 
 	appLogger.Debug("Wait 30 seconds")
-	time.Sleep(30 * time.Second)
+//	time.Sleep(30 * time.Second)
 
 
 	appLogger.Debug("------------- Done!")
 	return
 }
-
+/*
 func testGPCoinChaincode() (err error) {
 	// Deploy
 	err = deploy()
@@ -210,7 +208,29 @@ func testGPCoinChaincode() (err error) {
 	return
 }
 
+*/
+func check(n int, args []string) {
+	if len(args) != n {
+
+		panic(fmt.Errorf("wrong args\n"))
+	}
+
+}
+
 func main() {
+	var chaincodeName   string
+	var method	    string
+
+	flag.StringVar(&chaincodeName, "n", " ", "Chaincode Name")
+	flag.StringVar(&method, "m", " ", "method it call")
+
+
+	flag.Parse()
+
+	if method != "deploy" && len(chaincodeName) == 1 {
+		panic(fmt.Errorf("no caincodeName\n"))
+
+	}
 	// Initialize a non-validating peer whose role is to submit
 	// transactions to the fabric network.
 	// A 'core.yaml' file is assumed to be available in the working directory.
@@ -222,10 +242,38 @@ func main() {
 	// Enable fabric 'confidentiality'
 	confidentiality(false)
 
-	// Exercise the 'asset_management' chaincode
-	if err := testGPCoinChaincode(); err != nil {
-		appLogger.Debugf("Failed testing asset management chaincode [%s]", err)
-		os.Exit(-2)
+
+	args := flag.Args()
+
+	switch method {
+		case "deploy" :
+				chainName := deploy()
+				fmt.Println(chainName)
+		case "topup"  :
+				check(2, args)
+				topup(chaincodeName, args[0], args[1])
+		case "invest" :
+				check(2, args)
+				invest(chaincodeName, args[0], args[1])
+		case "cashout":
+				check(2, args)
+				cashout(chaincodeName, args[0], args[1])
+		case "transfer":
+				check(3, args)
+				transfer(chaincodeName, args[0], args[1], args[2])
+		case "query":
+				check(1, args)
+				CheckUser(chaincodeName, args[0])
+		default :
+			fmt.Println("you must input a method")
+
 	}
+
+
+	// Exercise the 'asset_management' chaincode
+	//if err := testGPCoinChaincode(); err != nil {
+	//	appLogger.Debugf("Failed testing asset management chaincode [%s]", err)
+	//	os.Exit(-2)
+	//}
 }
 

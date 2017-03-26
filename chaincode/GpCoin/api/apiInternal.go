@@ -24,7 +24,7 @@ var (
 	confidentialityOn bool
 
 	confidentialityLevel pb.ConfidentialityLevel
-	chaincodeName        string
+	chancodeName        string
 )
 
 func initNVP() (err error) {
@@ -114,12 +114,12 @@ func confidentiality(enabled bool) {
 	}
 }
 
-func deployInternal(deployer crypto.Client, adminCert crypto.CertificateHandler) (resp *pb.Response, err error) {
+func deployInternal(deployer crypto.Client, adminCert crypto.CertificateHandler) (chanName string, err error) {
 	// Prepare the spec. The metadata includes the identity of the administrator
 	spec := &pb.ChaincodeSpec{
 		Type:        1,
 		ChaincodeID: &pb.ChaincodeID{Path: "github.com/hyperledger/fabric/examples/chaincode/go/GpCoin"},
-		//ChaincodeID:          &pb.ChaincodeID{Name: chaincodeName},
+		//ChaincodeID:          &pb.ChaincodeID{Name: chanName},
 		CtorMsg:              &pb.ChaincodeInput{Args: util.ToChaincodeArgs("init")},
 		Metadata:             adminCert.GetCertificate(),
 		ConfidentialityLevel: confidentialityLevel,
@@ -128,26 +128,26 @@ func deployInternal(deployer crypto.Client, adminCert crypto.CertificateHandler)
 	// First build the deployment spec
 	cds, err := getChaincodeBytes(spec)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting deployment spec: %s ", err)
+		return "nil", fmt.Errorf("Error getting deployment spec: %s ", err)
 	}
 
 	// Now create the Transactions message and send to Peer.
 	transaction, err := deployer.NewChaincodeDeployTransaction(cds, cds.ChaincodeSpec.ChaincodeID.Name)
 	if err != nil {
-		return nil, fmt.Errorf("Error deploying chaincode: %s ", err)
+		return "nil", fmt.Errorf("Error deploying chaincode: %s ", err)
 	}
 
-	resp, err = processTransaction(transaction)
+	resp, err := processTransaction(transaction)
 
 	appLogger.Debugf("resp [%s]", resp.String())
 
-	chaincodeName = cds.ChaincodeSpec.ChaincodeID.Name
-	appLogger.Debugf("ChaincodeName [%s]", chaincodeName)
+	chanName = string(cds.ChaincodeSpec.ChaincodeID.Name)
+	appLogger.Debugf("ChaincodeName [%s]", chanName)
 
 	return
 }
 
-func investInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, investor string) (resp *pb.Response, err error) {
+func investInternal(chanName string, invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, investor string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -180,7 +180,7 @@ func investInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler
 	// Prepare spec and submit
 	spec := &pb.ChaincodeSpec{
 		Type:                 1,
-		ChaincodeID:          &pb.ChaincodeID{Name: chaincodeName},
+		ChaincodeID:          &pb.ChaincodeID{Name: chanName},
 		CtorMsg:              chaincodeInput,
 		Metadata:             sigma, // Proof of identity
 		ConfidentialityLevel: confidentialityLevel,
@@ -197,7 +197,7 @@ func investInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler
 	return processTransaction(transaction)
 }
 
-func cashoutInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, cashouter string) (resp *pb.Response, err error) {
+func cashoutInternal(chanName string, invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, cashouter string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -230,7 +230,7 @@ func cashoutInternal(invoker crypto.Client, invokerCert crypto.CertificateHandle
 	// Prepare spec and submit
 	spec := &pb.ChaincodeSpec{
 		Type:                 1,
-		ChaincodeID:          &pb.ChaincodeID{Name: chaincodeName},
+		ChaincodeID:          &pb.ChaincodeID{Name: chanName},
 		CtorMsg:              chaincodeInput,
 		Metadata:             sigma, // Proof of identity
 		ConfidentialityLevel: confidentialityLevel,
@@ -248,7 +248,7 @@ func cashoutInternal(invoker crypto.Client, invokerCert crypto.CertificateHandle
 }
 
 
-func topupInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, topupter string) (resp *pb.Response, err error) {
+func topupInternal(chanName string, invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, topupter string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -281,7 +281,7 @@ func topupInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler,
 	// Prepare spec and submit
 	spec := &pb.ChaincodeSpec{
 		Type:                 1,
-		ChaincodeID:          &pb.ChaincodeID{Name: chaincodeName},
+		ChaincodeID:          &pb.ChaincodeID{Name: chanName},
 		CtorMsg:              chaincodeInput,
 		Metadata:             sigma, // Proof of identity
 		ConfidentialityLevel: confidentialityLevel,
@@ -298,7 +298,7 @@ func topupInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler,
 	return processTransaction(transaction)
 }
 
-func transferInternal(invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, from string, to string) (resp *pb.Response, err error) {
+func transferInternal(chanName string, invoker crypto.Client, invokerCert crypto.CertificateHandler, amount string, from string, to string) (resp *pb.Response, err error) {
 	// Get a transaction handler to be used to submit the execute transaction
 	// and bind the chaincode access control logic using the binding
 	submittingCertHandler, err := invoker.GetTCertificateHandlerNext()
@@ -332,7 +332,7 @@ func transferInternal(invoker crypto.Client, invokerCert crypto.CertificateHandl
 	// Prepare spec and submit
 	spec := &pb.ChaincodeSpec{
 		Type:                 1,
-		ChaincodeID:          &pb.ChaincodeID{Name: chaincodeName},
+		ChaincodeID:          &pb.ChaincodeID{Name: chanName},
 		CtorMsg:              chaincodeInput,
 		Metadata:             sigma, // Proof of identity
 		ConfidentialityLevel: confidentialityLevel,
@@ -349,15 +349,14 @@ func transferInternal(invoker crypto.Client, invokerCert crypto.CertificateHandl
 	return processTransaction(transaction)
 }
 
-/*
-func CheckUser(invoker crypto.CertificateHandler) (transaction *pb.Transaction, resp *pb.Response, err error) {
-	certBytes := base64.StdEncoding.EncodeToString(invoker.GetCertificate())
-	chaincodeInput := &pb.ChaincodeInput{Args: util.ToChaincodeArgs("query", certBytes)}
+
+func CheckUser(chanName string, user string) (transaction *pb.Transaction, resp *pb.Response, err error) {
+	chaincodeInput := &pb.ChaincodeInput{Args: util.ToChaincodeArgs("query", user)}
 
 	// Prepare spec and submit
 	spec := &pb.ChaincodeSpec{
 		Type:                 1,
-		ChaincodeID:          &pb.ChaincodeID{Name: chaincodeName},
+		ChaincodeID:          &pb.ChaincodeID{Name: chanName},
 		CtorMsg:              chaincodeInput,
 		ConfidentialityLevel: confidentialityLevel,
 	}
@@ -365,15 +364,16 @@ func CheckUser(invoker crypto.CertificateHandler) (transaction *pb.Transaction, 
 	chaincodeInvocationSpec := &pb.ChaincodeInvocationSpec{ChaincodeSpec: spec}
 
 	// Now create the Transactions message and send to Peer.
-	transaction, err = invoker.NewChaincodeQuery(chaincodeInvocationSpec, util.GenerateUUID())
+	transaction, err = alice.NewChaincodeQuery(chaincodeInvocationSpec, util.GenerateUUID())
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error deploying chaincode: %s ", err)
 	}
 
 	resp, err = processTransaction(transaction)
+	fmt.Println(resp.String())
 	return
 }
-*/
+
 
 func getChaincodeBytes(spec *pb.ChaincodeSpec) (*pb.ChaincodeDeploymentSpec, error) {
 	mode := viper.GetString("chaincode.mode")
