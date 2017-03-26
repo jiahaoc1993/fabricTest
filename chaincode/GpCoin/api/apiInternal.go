@@ -315,7 +315,7 @@ func transferInternal(chanName string, invoker crypto.Client, invokerCert crypto
 	}
 
 	chaincodeInput := &pb.ChaincodeInput{
-		Args: util.ToChaincodeArgs("invest", amount, from, to),
+		Args: util.ToChaincodeArgs("transfer", amount, from, to),
 	}
 
 	chaincodeInputRaw, err := proto.Marshal(chaincodeInput)

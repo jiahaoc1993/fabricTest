@@ -288,7 +288,7 @@ func (t *GPCoinChaincode) invest(stub shim.ChaincodeStubInterface, args []string
 
 
 func (t *GPCoinChaincode) cashout(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	myLogger.Debug("invest...")
+	myLogger.Debug("cashout...")
 
 	if len(args) != 2 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2")
@@ -604,8 +604,10 @@ func (t *GPCoinChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	} else if function == "transfer" {
 		// Transfer ownership
 		return t.transfer(stub, args)
-	}else if function == "topup"{
+	}else if function == "topup" {
 		return t.topup(stub, args)
+	}else if function == "cashout" {
+		return t.cashout(stub, args)
 	}
 
 	return nil, errors.New("Received unknown function invocation")

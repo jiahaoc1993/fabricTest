@@ -43,9 +43,10 @@ func deploy() (err error) {
 	// 3. Alice obtains, via an out-of-band channel, a TCert of Bob, let us call this certificate *BobCert*;
 
 	// 5. Alice submits th	e transaction to the fabric network.
-	bobCert, err = bob.GetTCertificateHandlerNext()
+
+	bobCert, err = bob.GetEnrollmentCertificateHandler()
 	if err != nil {
-		appLogger.Errorf("Failed getting Bob TCert [%s]", err)
+		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
 		return
 	}
 	resp, err := deployInternal(bob, bobCert)
@@ -72,6 +73,11 @@ func topup(chaincodeName string, amount string, user string) (err error) {
 	//	appLogger.Errorf("Failed getting Charlie TCert [%s]", err)
 	//	return
 	//}
+	bobCert, err = bob.GetEnrollmentCertificateHandler()
+	if err != nil {
+		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
+		return
+	}
 
 	resp, err := topupInternal(chaincodeName, bob, bobCert, amount, user)
 	if err != nil {
@@ -98,6 +104,11 @@ func invest(chaincodeName string, amount string, user string) (err error) {
 	//	return
 	//}
 
+	bobCert, err = bob.GetEnrollmentCertificateHandler()
+	if err != nil {
+		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
+		return
+	}
 	resp, err := investInternal(chaincodeName, bob, bobCert, amount, user)
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
@@ -123,7 +134,12 @@ func cashout(chaincodeName string, amount string, user string) (err error) {
 	//	return
 	//}
 
-	resp, err := topupInternal(chaincodeName, bob, bobCert, amount, user)
+	bobCert, err = bob.GetEnrollmentCertificateHandler()
+	if err != nil {
+		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
+		return
+	}
+	resp, err := cashoutInternal(chaincodeName, bob, bobCert, amount, user)
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
 		return
@@ -154,6 +170,11 @@ func transfer(chaincodeName string, amount string, from string, to string) (err 
 	//}
 
 
+	bobCert, err = bob.GetEnrollmentCertificateHandler()
+	if err != nil {
+		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
+		return
+	}
 	resp, err := transferInternal(chaincodeName, bob, bobCert, amount, from, to)
 	if err != nil {
 		appLogger.Errorf("Failed assigning ownership [%s]", err)
