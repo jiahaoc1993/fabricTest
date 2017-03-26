@@ -117,16 +117,27 @@ func queryHandle(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "wrong arguments")
 	}
 
-	err := 
+	res, err := CheckUser(chaincodName, user)
+	if err != nil {
+		fmt.Fprintf(w, "failed")
 	}
 
+	fmt.Fprintf(w, res)
+}
+
 func main() {
-	
+	if err := ininNVP(); err != nil {
+	appLogger.Debugf("Failed initiliazing NVP [%s]", err)
+                os.Exit(-1)
+	}
+	chaincodeName = deploy()
+
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/topup", topupHandle)
 	http.HandleFunc("/invest", investHandle)
 	http.HandleFunc("/cashout", cashoutHandle)
 	http.HandleFunc("/transfer", transferHandle)
+	http.HandleFunc("/query", queryHandle)
 	http.ListenAndServe(":8080", nil)
 }
 

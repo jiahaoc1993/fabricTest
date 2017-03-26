@@ -350,7 +350,7 @@ func transferInternal(chanName string, invoker crypto.Client, invokerCert crypto
 }
 
 
-func CheckUser(chanName string, user string) (transaction *pb.Transaction, resp *pb.Response, err error) {
+func CheckUser(chanName string, user string) (res string, err error) {
 	chaincodeInput := &pb.ChaincodeInput{Args: util.ToChaincodeArgs("query", user)}
 
 	// Prepare spec and submit
@@ -364,13 +364,14 @@ func CheckUser(chanName string, user string) (transaction *pb.Transaction, resp 
 	chaincodeInvocationSpec := &pb.ChaincodeInvocationSpec{ChaincodeSpec: spec}
 
 	// Now create the Transactions message and send to Peer.
-	transaction, err = alice.NewChaincodeQuery(chaincodeInvocationSpec, util.GenerateUUID())
+	transaction, err := alice.NewChaincodeQuery(chaincodeInvocationSpec, util.GenerateUUID())
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error deploying chaincode: %s ", err)
+		return "nil", fmt.Errorf("Error deploying chaincode: %s ", err)
 	}
 
 	resp, err = processTransaction(transaction)
-	fmt.Println(resp.String())
+	//fmt.Println(resp.String())
+	res = resp.String()
 	return
 }
 
