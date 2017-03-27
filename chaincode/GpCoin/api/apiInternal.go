@@ -369,7 +369,7 @@ func CheckUser(chanName string, user string) (res string, err error) {
 		return "nil", fmt.Errorf("Error deploying chaincode: %s ", err)
 	}
 
-	resp, err = processTransaction(transaction)
+	resp, err := processTransaction(transaction)
 	//fmt.Println(resp.String())
 	res = resp.String()
 	return

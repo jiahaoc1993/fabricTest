@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
+	//"os"
 
 	//"reflect"
 	"time"
-	"flag"
+//	"flag"
 	"github.com/hyperledger/fabric/core/crypto"
 	pb "github.com/hyperledger/fabric/protos"
 	"github.com/op/go-logging"
@@ -36,14 +36,14 @@ var (
 	daveCert crypto.CertificateHandler
 )
 
-func deploy() (err error) {
+func deploy() (resp string,err error) {
 	appLogger.Debug("------------- Alice wants to assign the administrator role to Bob;")
 	bobCert, err = bob.GetEnrollmentCertificateHandler()
 	if err != nil {
 		appLogger.Errorf("Failed getting Bob ECert [%s]", err)
 		return
 	}
-	resp, err := deployInternal(bob, bobCert)
+	resp, err = deployInternal(bob, bobCert)
 	if err != nil {
 		appLogger.Errorf("Failed deploying [%s]", err)
 		return
@@ -191,26 +191,23 @@ func testGPCoinChaincode() (err error) {
 }
 
 */
-func check(n int, args []string) err error{
-	if len(args) != n {
 
-		err = fmt.Errorf("wrong args\n")
-		return
+func check(n int, args []string) error{
+	if len(args) != n {
+		err := fmt.Errorf("wrong args\n")
+		return err
 	}
 
 	return nil
 }
 
+/*
 func main() {
 	var chaincodeName   string
 	var method	    string
-
 	flag.StringVar(&chaincodeName, "n", " ", "Chaincode Name")
 	flag.StringVar(&method, "m", " ", "method it call")
-
-
 	flag.Parse()
-
 	if method != "deploy" && len(chaincodeName) == 1 {
 		panic(fmt.Errorf("no caincodeName\n"))
 
@@ -222,13 +219,9 @@ func main() {
 		appLogger.Debugf("Failed initiliazing NVP [%s]", err)
 		os.Exit(-1)
 	}
-
 	// Enable fabric 'confidentiality'
 	confidentiality(false)
-
-
 	args := flag.Args()
-
 	switch method {
 		case "deploy" :
 				chainName := deploy()
@@ -252,12 +245,11 @@ func main() {
 			fmt.Println("you must input a method")
 
 	}
-
+*/
 
 	// Exercise the 'asset_management' chaincode
 	//if err := testGPCoinChaincode(); err != nil {
 	//	appLogger.Debugf("Failed testing asset management chaincode [%s]", err)
 	//	os.Exit(-2)
 	//}
-}
 

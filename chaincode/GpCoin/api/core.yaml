@@ -6,7 +6,7 @@
 cli:
 
     # The address that the cli process will use for callbacks from chaincodes
-    address: vp0:7052
+    address: 172.17.0.3:7052
 
 
 
@@ -23,7 +23,7 @@ rest:
     enabled: true
 
     # The address that the REST service will listen on for incoming requests.
-    address: vp0:7050
+    address: 172.17.0.3:7050
 
     validPatterns:
 
@@ -88,9 +88,9 @@ peer:
     networkId: dev
 
     # The Address this Peer will listen on
-    listenAddress: vp0:7051
+    listenAddress: 172.17.0.3:7051
     # The Address this Peer will bind to for providing services
-    address: vp0:7051
+    address: 172.17.0.3:7051
     # Whether the Peer should programmatically determine the address to bind to.
     # This case is useful for docker containers.
     addressAutoDetect: false
@@ -141,7 +141,7 @@ peer:
 
         events:
             # The address that the Event service will be enabled on the validator
-            address: vp0:7053
+            address: 172.17.0.3:7053
 
             # total number of events that could be buffered without blocking the
             # validator sends
@@ -166,11 +166,11 @@ peer:
     # PKI member services properties
     pki:
         eca:
-            paddr: membersrvc:7054
+            paddr: 172.17.0.2:7054
         tca:
-            paddr: membersrvc:7054
+            paddr: 172.17.0.2:7054
         tlsca:
-            paddr: membersrvc:7054
+            paddr: 172.17.0.2:7054
         tls:
             enabled: false
             rootcert:
@@ -221,7 +221,7 @@ peer:
 
     profile:
         enabled:     false
-        listenAddress: vp0:6060
+        listenAddress: 172.17.0.3:6060
 
 ###############################################################################
 #

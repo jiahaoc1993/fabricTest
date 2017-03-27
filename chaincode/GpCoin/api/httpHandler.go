@@ -4,6 +4,7 @@ import(
 //	"io"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 var chaincodeName string
@@ -19,8 +20,10 @@ func login(w http.ResponseWriter, req *http.Request) {
 	//	fmt.Fprintf(w, "Don't do this")
 	//
 	req.ParseForm()
-	userName, found1 := req.Form["userName"]
-	pass, found2     := req.Form["pass"]
+	userNames, found1 := req.Form["userName"]
+	passs, found2     := req.Form["pass"]
+	userName := userNames[0]
+	pass    := passs[0]
 
 	if !(found1 && found2) {
 		fmt.Fprintf(w, "Please offer the user and pass")
@@ -28,9 +31,9 @@ func login(w http.ResponseWriter, req *http.Request) {
 
 	if userName == "Tom" && pass == "123" {
 		fmt.Fprintf(w, "ok")
-	}else userName == "alice" && pass == "123" {
+	}else if userName == "alice" && pass == "123" {
 		fmt.Fprintf(w, "ok")
-	}else userName == "bob"   &&  pass == "123" {
+	}else if userName == "bob"   &&  pass == "123" {
 		fmt.Fprintf(w, "ok")
 	}else {
 		fmt.Fprintf(w, "user or pass error!")
@@ -39,7 +42,7 @@ func login(w http.ResponseWriter, req *http.Request) {
 }
 
 func topupHandle(w http.ResponseWriter, req *http.Request) {
-	req.ParesForm()
+	req.ParseForm()
 	amount, found1 := req.Form["amount"]
 	user, found2   := req.Form["user"]
 
@@ -47,17 +50,17 @@ func topupHandle(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "Wrong arguments")
 	}
 
-	err := topup(chaincodeName, amount, user)
+	err := topup(chaincodeName, amount[0], user[0])
 	if err != nil {
 		fmt.Fprintf(w, "faild")
 	}
 
-	fmt.Fprinrf(w, "ok")
+	fmt.Fprintf(w, "ok")
 }
 
 
 func investHandle(w http.ResponseWriter, req *http.Request) {
-	req.ParesForm()
+	req.ParseForm()
 	amount, found1 := req.Form["amount"]
 	user, found2   := req.Form["user"]
 
@@ -65,17 +68,17 @@ func investHandle(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "Wrong arguments")
 	}
 
-	err := invest(chaincodeName, amount, user)
+	err := invest(chaincodeName, amount[0], user[0])
 	if err != nil {
 		fmt.Fprintf(w, "faild")
 	}
 
-	fmt.Fprinrf(w, "ok")
+	fmt.Fprintf(w, "ok")
 }
 
 
 func cashoutHandle(w http.ResponseWriter, req *http.Request) {
-	req.ParesForm()
+	req.ParseForm()
 	amount, found1 := req.Form["amount"]
 	user, found2   := req.Form["user"]
 
@@ -83,31 +86,30 @@ func cashoutHandle(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "Wrong arguments")
 	}
 
-	err := cashout(chaincodeName, amount, user)
+	err := cashout(chaincodeName, amount[0], user[0])
 	if err != nil {
 		fmt.Fprintf(w, "faild")
 	}
 
-	fmt.Fprinrf(w, "ok")
+	fmt.Fprintf(w, "ok")
 }
 
 func transferHandle(w http.ResponseWriter, req *http.Request) {
-	req.ParesForm()
+	req.ParseForm()
 	amount, found1 := req.Form["amount"]
 	from, found2   := req.Form["from"]
-	to, found3     := req.Form]["to"]
+	to, found3     := req.Form["to"]
 
-
-	if !(found1 && found2) {
+	if !(found1 && found2 && found3) {
 		fmt.Fprintf(w, "Wrong arguments")
 	}
 
-	err := topup(chaincodeName, amount, from, to)
+	err := transfer(chaincodeName, amount[0], from[0], to[0])
 	if err != nil {
 		fmt.Fprintf(w, "faild")
 	}
 
-	fmt.Fprinrf(w, "ok")
+	fmt.Fprintf(w, "ok")
 }
 
 func queryHandle(w http.ResponseWriter, req *http.Request) {
@@ -117,7 +119,7 @@ func queryHandle(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "wrong arguments")
 	}
 
-	res, err := CheckUser(chaincodName, user)
+	res, err := CheckUser(chaincodeName, user[0])
 	if err != nil {
 		fmt.Fprintf(w, "failed")
 	}
@@ -126,11 +128,17 @@ func queryHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	if err := ininNVP(); err != nil {
+	var err error
+	if err = initNVP(); err != nil {
 	appLogger.Debugf("Failed initiliazing NVP [%s]", err)
                 os.Exit(-1)
 	}
-	chaincodeName = deploy()
+
+	chaincodeName, err = deploy()
+	if err != nil {
+		appLogger.Debugf("Failed with initiliazing")
+		os.Exit(-1)
+	}
 
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/topup", topupHandle)
@@ -138,9 +146,10 @@ func main() {
 	http.HandleFunc("/cashout", cashoutHandle)
 	http.HandleFunc("/transfer", transferHandle)
 	http.HandleFunc("/query", queryHandle)
-	http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
-
-
 
 
