@@ -1,0 +1,98 @@
+﻿.page-con { width:100%; height:auto;}
+
+.banner { width: 100%; height: 280px; }
+.detail-con { width:1200px; height:auto; margin:0 auto;}
+.detail-left { float:left; width:280px; height:600px; background: #f1e9d0; padding-bottom: 60px; }
+.detail-left h2 { margin-top: 40px; color: #ba8a16; }
+.detail-left ul li { color: rgba(0,0,0,.87); font-size: 14px; margin-top: 40px; }
+.detail-left ul li span.active { color: #ba8a16; border-bottom: 1px solid #ba8a16; }
+.detail-right { float:right; width:900px; text-align: center;}
+.detail-right-con { width: 460px; height: auto; margin: 0 auto; }
+.detail-right h2 { width:auto; height:auto; text-align:left; padding-left:50px; font-size: 20px; color: #ba8a16; margin-top:40px;}
+.detail-right ul { float: left; width: 100%; margin-top: 10px;  }
+.detail-right ul li { margin-top: 30px; color: rgba(0,0,0,.87); text-align: left; }
+.detail-right ul li span:last-child { margin-left: 50px; }
+.detail-right p { float: right; width: auto; }
+.detail-right p.btn input { width: 100px; height: 40px; text-align: center; color: #fff; background: #919191; border: none; margin-top: 28px; margin-left:20px; border-radius: 4px; }
+.detail-right p.btn input.submit { background: #b98b16; }
+.dialog { position:fixed; width:100%; height:100%; background: rgba(0,0,0,0.5); left:0; top:0; z-index:1; display:none; }
+.dialog-con { position:fixed; width:400px; height:450px; left: 50%; top:20%; margin-left: -180px; z-index:1; background:#fff;}
+.login-con h2 { width:100%; height:60px; line-height:60px; font-size: 16px; background:#b98b16; color: #fff;}
+.login-con div { position:relative; width:auto; height:50px; line-height: 50px; margin: 10px 50px;}
+.login-con div span { float: left; width: 105px; height: 50px; color: rgba(0,0,0,.54); text-align: left; }
+.login-con div input { float: left; width: 175px; height: 50px; border: 1px solid #dcdcdc; background: #f0eff0; margin-left: 20px; border-radius: 4px; text-align: left; color: rgba(0,0,0,.54); padding-left: 20px; }
+.login-con p.btn input { width: 100px; height: 40px; text-align: center; color: #fff; background: #919191; border: none; margin-top: 28px; margin-left:20px; border-radius: 4px; }
+.login-con p.btn input.submit { background: #b98b16; }
+
+/*query*/
+.query-con { width:1200px; height:auto; margin:0 auto;}
+.query-left { float:left; width:280px; min-height:600px; background: #f1e9d0; }
+.query-left h2 { margin-top: 40px; color: #ba8a16; }
+.query-left ul li { color: rgba(0,0,0,.87); font-size: 14px; line-height:40px; }
+.query-left ul li span.active { color: #ba8a16; border-bottom: 1px solid #ba8a16; }
+.query-right { float:right; width:900px; text-align: center;}
+.query-right-con { float:right; width:600px; height: auto; margin: 0 auto; }
+.query-right-con div.title { float:left; margin-top:40px;}
+.query-right-con div.title h2 { float:left; width:auto; height:auto; line-height:50px; text-align:left; font-size: 20px; }
+.query-right-con div.title p { position:relative; width:270px; height:50px; margin-left:40px; overflow:hidden; }
+.query-right-con div.title p input.text { width:270px; height:50px; text-align:left; line-height:50px; border:1px solid #b98a16;  border-radius:4px; padding-left:10px; }
+.query-right-con div.title p input.query { position:absolute; right:0; width:86px; height:100%; color:#fff; text-align:center; border:1px solid #b98a16; background:#b98a16; border-radius:0 4px 4px 0; }
+.query-right ul { float: left; width: 100%; margin-top: 10px;  }
+.query-right ul li { margin-top: 30px; font-size:14px; color: rgba(0,0,0,.87); text-align: left; }
+.query-right ul li span:last-child { margin-left: 50px; }
+.query-right p { float: right; width: auto; }
+.query-right p.btn input { width: 100px; height: 40px; text-align: center; color: #fff; background: #919191; border: none; margin-top: 28px; margin-left:20px; border-radius: 4px; }
+.query-right p.btn input.submit { background: #b98b16; }
+.query-left ul.scrollbar { width:220px; height:200px; margin:0 auto; overflow-y:scroll; margin-top:40px;}
+/*定义滚动条宽高及背景，宽高分别对应横竖滚动条的尺寸*/
+.scrollbar::-webkit-scrollbar{
+width: 16px;
+height: 16px;
+background-color: none;
+}
+/*定义滚动条的轨道，内阴影及圆角*/
+.scrollbar::-webkit-scrollbar-track{
+-webkit-box-shadow: inset 0 0 0px rgba(0,0,0,0);
+border-radius: 10px;
+background-color: none;
+}
+/*定义滑块，内阴影及圆角*/
+.scrollbar::-webkit-scrollbar-thumb{
+/*width: 10px;*/
+height: 20px;
+border-radius: 10px;
+-webkit-box-shadow: inset 0 0 0px rgba(0,0,0,0);
+background-color: #ccc;
+}
+.srcoll-con { float:right; width:100%; min-height:200px; margin-top:30px;}
+.srcoll-con dl dt { float:left; width:auto; border-bottom:1px solid #eee; color:rgba(0,0,0,.87); text-align:left; line-height:50px;}
+.srcoll-con dl dt.number { width:100px; }
+.srcoll-con dl dt.sender { width:160px; }
+.srcoll-con dl dt.receiver { width:160px; }
+.srcoll-con dl dt.amount { width:100px; }
+.srcoll-con dl dd { float:left; width:auto; border-bottom:1px solid #eee; color:rgba(0,0,0,.54); text-align:left; line-height:50px;}
+.srcoll-con dl dd.number { width:100px; }
+.srcoll-con dl dd.sender { width:160px; }
+.srcoll-con dl dd.receiver { width:160px; }
+.srcoll-con dl dd.amount { width:100px; }
+.srcoll-con div.scrollbar { width:100%; height:200px; margin:0 auto; overflow-y:scroll; margin-top:30PX;}
+/*定义滚动条宽高及背景，宽高分别对应横竖滚动条的尺寸*/
+.scrollbar::-webkit-scrollbar{
+width: 16px;
+height: 16px;
+background-color: none;
+}
+/*定义滚动条的轨道，内阴影及圆角*/
+.scrollbar::-webkit-scrollbar-track{
+-webkit-box-shadow: inset 0 0 0px rgba(0,0,0,0);
+border-radius: 10px;
+background-color: none;
+}
+/*定义滑块，内阴影及圆角*/
+.scrollbar::-webkit-scrollbar-thumb{
+/*width: 10px;*/
+height: 20px;
+border-radius: 10px;
+-webkit-box-shadow: inset 0 0 0px rgba(0,0,0,0);
+background-color: #ccc;
+}

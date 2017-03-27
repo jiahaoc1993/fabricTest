@@ -1,0 +1,14 @@
+﻿html,body{width: 100%;max-width: 100%; -webkit-touch-callout:none; font-family: 'HanHei SC', 'PingFang SC','微软雅黑','Helvetica Neue', 'Helvetica', 'STHeitiSC-Light', 'Arial'; -webkit-font-smoothing: antialiased;}
+.warp{
+    float: left;
+	width: 100%;
+	margin: 0 auto;
+}
+.warp-con { width:1200px; height:auto; margin:0 auto;}
+.nav-con { float: left; width: 100%; background: #fff; border-bottom: 1px solid #b98b16;}
+.nav { width:1200px; height:74px; line-height:74px; margin:0 auto;}
+.nav span { float:left; width:auto; height:auto; margin-top: 25px;}
+.nav ul { float:right; width:600px;}
+.nav ul li { float:right; width:auto; height:74px; font-size: 16px; margin-left: 30px;}
+.nav ul li.active a { color: #b98b16; border-bottom: 1px solid #b98b16; }
+.nav ul li a:hover { color: #b98b16; border-bottom: 1px solid #b98b16; }
