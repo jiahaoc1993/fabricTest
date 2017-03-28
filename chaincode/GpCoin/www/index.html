@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="css/public.css" >
 <link rel="stylesheet" href="css/index.css" >
 <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-<script type="text/javascript" src="js/test.js"></script>
+<script type="text/javascript" src="js/home.js"></script>
 
 </head>
 
@@ -34,10 +34,10 @@
             	<ul>
 		     
                     <li><span class="active">Account Detial</span></li>
-                    <li class="click pop">Top UP</li>
-                    <li class="click pop">Invest GPCoin</li>
-                    <li class="click pop">Cash Out</li>
-                    <li class="click pop">Transfer</li>
+                    <li id="topup" class="click pop">Top UP</li>
+                    <li id="invest" class="click pop">Invest GPCoin</li>
+                    <li id="cashout" class="click pop">Cash Out</li>
+                    <li id="transfer" class="click pop">Transfer</li>
                     <li>Query</li>
                 </ul>
             </div>
@@ -57,11 +57,11 @@
         <div class="dialog-con">
             <div class="login-con">
                 <h2>Goldpay International</h2>
-                <form name="myForm" method="" action="">
-                    <div><span>Transaction Type</span><input type="text" placeholder="Invest" /></div>
-                    <div><span>Amount</span><input type="text" placeholder="1000g" /></div>
-                    <div><span>Spot Gold Price</span><input type="text" value="318.5/g" /></div>
-                    <div><span>Transaction Fee</span><input type="text" value="5%" /></div>
+                <form id="myform" name="myForm" method="" action="">
+                    <div><span>Transaction Type</span><input id="txType" type="text" value="Invest" readonly/></div>
+                    <div><span>Amount</span><input id="amount" type="text" placeholder="1000g" /></div>
+                    <div><span id="target">Spot Gold Price</span><input type="text" value="123/g" readonly/></div>
+                    <div><span>Transaction Fee</span><input id="fee" type="text" value="5%" readonly/></div>
                     <p class="btn"><input type="submit" class="submit" value="Submit" /><input type="button" class="no" value="Cancenl" /></p>
                 </form>
             </div>
