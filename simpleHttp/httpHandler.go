@@ -1,10 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
+
+type response struct{
+	GpCoin string       `json:"gpcoin,omitempty"`
+	USD    string	    `json:"usd,omitempty"`
+}
 
 // cookie handling
 
@@ -12,11 +18,20 @@ import (
 
 // login handler
 func homePageHandler(w http.ResponseWriter, request *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
-	//w.Header().Set("content-type", "application/json") 
-	fmt.Fprint(w, "Hello World")
-}
+	w.Header().Set("Access-Control-Allow-Origin", "*")             //
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //
+	w.Header().Set("content-type", "application/json")
+	res := response{
+		GpCoin : "130",
+		USD : "134",
+		}
+	b, err := json.Marshal(&res)
+	fmt.Println(b)
+	if err == nil{
+		fmt.Fprint(w, string(b))
+	}else{
+		fmt.Fprint(w, err)
+}	}
 
 
 
