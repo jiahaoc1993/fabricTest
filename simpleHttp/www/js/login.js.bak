@@ -1,5 +1,4 @@
 $(document).ready(function(){
-	USER = "no login"
 	
 	$("#SignIn").click(function(){
 		var user = $("#user").val()
@@ -7,8 +6,7 @@ $(document).ready(function(){
 		if (user!="" && pass !=""){
 			if (user == "Luke" && pass == "Luke"){
 				//alert("Welcome come Luke!")
-				location.href = "./index.html"
-				USER = "Luke"
+				location.href = "./index.html?name=Luke"
 				}else{
 						alert("user name or password wrong")
 					}
@@ -23,3 +21,10 @@ $(document).ready(function(){
 		});
 		
 });
+
+
+ function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); 
+            var r = window.location.search.substr(1).match(reg);  
+            if (r != null) return unescape(r[2]); return null; 
+        }

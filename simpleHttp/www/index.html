@@ -45,9 +45,9 @@
                 <div class="detail-right-con">
                     <h2>Account Details</h2>
             	    <ul class="">
-                	   <li><span>Account Name:</span><span id="accountName">Barclay Africa</span></li>
-                        <li><span>Gold Balance:</span><span>2000 GPCoin</span></li>
-                        <li><span>USD Balance:</span><span>300 USD</span></li>
+                	   <li><span>Account Name:</span><span id="accountName" >Barclay Africa</span></li>
+                        <li><span>Gold Balance:</span><span id="GPCoin" >2000 GPCoin</span></li>
+                        <li><span>USD Balance:</span><span id="USD" >300 USD</span></li>
                     </ul>
                 </div>
             </div>
@@ -57,26 +57,45 @@
         <div class="dialog-con">
             <div class="login-con">
                 <h2>Goldpay International</h2>
-                <form id="myform" name="myForm" method="" action="">
+                <form name="myForm" method="post" action="">
                     <div><span>Transaction Type</span><input id="txType" type="text" value="Invest" readonly/></div>
                     <div><span>Amount</span><input id="amount" type="text" placeholder="1000g" /></div>
-                    <div><span id="target">Spot Gold Price</span><input type="text" value="123/g" readonly/></div>
+                    <div><span>Spot Gold Price</span><input id="party" type="text" value="123/g" readonly/></div>
                     <div><span>Transaction Fee</span><input id="fee" type="text" value="5%" readonly/></div>
-                    <p class="btn"><input type="submit" class="submit" value="Submit" /><input type="button" class="no" value="Cancenl" /></p>
+                    <p class="btn"><input type="button" class="submit" value="Submit" /><input type="button" class="no" value="Cancenl" /></p>
                 </form>
             </div>
         </div>
         </div>
+        
+       <div class="dialog2 transfer" hidden="true">
+        <div class="dialog-con">
+            <div class="login-con">
+                <h2>Goldpay International</h2>
+                <form  name="myForm2" method="post" action="">
+                    <div><span>Transaction Type</span><input type="text" value="Transfer" readonly/></div>
+                    <div><span>Amount</span><input id="amount" type="text" placeholder="1000g" /></div>
+                    <div><span>To party</span><input type="text" placeholder="Other member"/></div>
+                    <div><span>Transaction Fee</span><input id="fee" type="text" value="0% USD" readonly/></div>
+                    <p class="btn"><input type="button" class="submit" value="Submit" /><input type="button" class="no" value="Cancenl" /></p>
+                </form>
+            </div>
+        </div>
+        </div>
+        
+        
 
     </div>
 </div>
 <script type="text/javascript">
 $(document).ready(function(){
+	//$(".dialog2").hide();
 	$(".pop").click(function (){
 		  $('.dialog').show();
 		});
     $(".no").click(function (){
           $('.dialog').hide();
+          $('.dialog2').hide();
         });
 	});
 </script>

@@ -6,7 +6,7 @@ $(document).ready(function(){
 		if (user!="" && pass !=""){
 			if (user == "Luke" && pass == "Luke"){
 				//alert("Welcome come Luke!")
-				location.href = "./index.html"
+				location.href = "./index.html?name=Luke"
 				}else{
 						alert("user name or password wrong")
 					}
@@ -21,3 +21,5 @@ $(document).ready(function(){
 		});
 		
 });
+
+

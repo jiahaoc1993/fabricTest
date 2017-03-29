@@ -1,13 +1,11 @@
 $(document).ready(function(){
 	var user = getUrlParam('name')
-	alert(user)
-	$("#accountName").txt(user)
-	$.post("127.0.0.1:8000", {"user":"Luke"},
+	$("#accountName").text(user)
+		$.post("http://127.0.0.1:8000/query", {"user":"Luke"},
 			function(result, status){
 					alert(result+status);
 		}
 	);
-	
 	
 	$("#topup").click(function(){
 		$("#txType").val("top up");
@@ -34,6 +32,7 @@ $(document).ready(function(){
 	});	
 	
 })
+
 
  function getUrlParam(name) {
             var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); 

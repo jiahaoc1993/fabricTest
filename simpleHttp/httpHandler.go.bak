@@ -26,7 +26,7 @@ var router = mux.NewRouter()
 
 func main() {
 
-	router.HandleFunc("/query", homePageHandler).Methods("POST")
+	router.HandleFunc("/query", homePageHandler)
 
 	http.Handle("/", router)
 	http.ListenAndServe(":8000", nil)

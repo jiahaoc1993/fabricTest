@@ -12,7 +12,6 @@ import (
 
 // login handler
 func homePageHandler(response http.ResponseWriter, request *http.Request) {
-	fmt.Println(request)
 	response.Write([]byte("Hello World"))
 }
 
