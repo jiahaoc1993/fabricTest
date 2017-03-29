@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>账户中心</title>
+<link rel="stylesheet" href="css/reset.css" >
+<link rel="stylesheet" href="css/public.css" >
+<link rel="stylesheet" href="css/index.css" >
+<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="js/test.js"></script>
+
+</head>
+
+<body>
+<div class="warp">
+	<div class="page-con">
+        <div class="nav-con">
+            <div class="nav">
+                <span><img src="images/logo.png"></span>
+                <ul>
+                    <li><a href="#">Logout</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li class="active"><a href="#">Home</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="banner"><img src="images/banner.jpg"></div>
+        <div class="clearfix"></div>
+        <div class="detail-con">
+        	<div class="detail-left">
+            <h2>Account Operations</h2>
+            	<ul>
+		     
+                    <li><span class="active">Account Detial</span></li>
+                    <li class="click pop">Top UP</li>
+                    <li class="click pop">Invest GPCoin</li>
+                    <li class="click pop">Cash Out</li>
+                    <li class="click pop">Transfer</li>
+                    <li>Query</li>
+                </ul>
+            </div>
+            <div class="detail-right">
+                <div class="detail-right-con">
+                    <h2>Account Details</h2>
+            	    <ul class="">
+                	   <li><span>Account Name:</span><span>Barclay Africa</span></li>
+                        <li><span>Gold Balance:</span><span>2000 GPCoin</span></li>
+                        <li><span>USD Balance:</span><span>300 USD</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--what?-->
+        <div class="dialog">
+        <div class="dialog-con">
+            <div class="login-con">
+                <h2>Goldpay International</h2>
+                <form name="myForm" method="" action="">
+                    <div><span>Transaction Type</span><input type="text" placeholder="Invest" /></div>
+                    <div><span>Amount</span><input type="text" placeholder="1000g" /></div>
+                    <div><span>Spot Gold Price</span><input type="text" value="318.5/g" /></div>
+                    <div><span>Transaction Fee</span><input type="text" value="5%" /></div>
+                    <p class="btn"><input type="submit" class="submit" value="Submit" /><input type="button" class="no" value="Cancenl" /></p>
+                </form>
+            </div>
+        </div>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){
+	$(".pop").click(function (){
+		  $('.dialog').show();
+		});
+    $(".no").click(function (){
+          $('.dialog').hide();
+        });
+	});
+</script>
+</body>
+</html>
