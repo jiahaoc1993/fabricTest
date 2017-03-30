@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>账户中心</title>
+<link rel="stylesheet" href="css/reset.css" >
+<link rel="stylesheet" href="css/public.css" >
+<link rel="stylesheet" href="css/index.css" >
+<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="js/home.js"></script>
+
+</head>
+
+<body>
+<div class="warp">
+	<div class="page-con">
+        <div class="nav-con">
+            <div class="nav">
+                <span><img src="images/logo.png"></span>
+                <ul>
+                    <li><a href="#">Logout</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li class="active"><a href="#">Home</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="banner"><img src="images/banner.jpg"></div>
+        <div class="clearfix"></div>
+        <div class="detail-con">
+        	<div class="detail-left">
+            <h2>Account Operations</h2>
+            	<ul>
+		     
+                    <li><span class="active">Account Detial</span></li>
+                    <li id="topup" class="click pop">Top UP</li>
+                    <li id="invest" class="click pop">Invest GPCoin</li>
+                    <li id="cashout" class="click pop">Cash Out</li>
+                    <li id="transfer" class="click pop">Transfer</li>
+                    <li>Query</li>
+                </ul>
+            </div>
+            <div class="detail-right">
+                <div class="detail-right-con">
+                    <h2>Account Details</h2>
+            	    <ul class="">
+                	   <li><span>Account Name:</span><span id="accountName" >Barclay Africa</span></li>
+                        <li><span>Gold Balance:</span><span id="GPCoin" >2000 GPCoin</span></li>
+                        <li><span>USD Balance:</span><span id="USD" >300 USD</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--what?-->
+        <div class="dialog">
+        <div class="dialog-con">
+            <div class="login-con">
+                <h2>Goldpay International</h2>
+                <form name="myForm" method="post" action="">
+                    <div><span>Transaction Type</span><input id="txType" type="text" value="Invest" readonly/></div>
+                    <div><span>Amount</span><input id="amount" type="text" placeholder="1000g" /></div>
+                    <div><span>Spot Gold Price</span><input  type="text" value="123/g" readonly/></div>
+                    <div><span>Transaction Fee</span><input id="fee" type="text" value="5%" readonly/></div>
+                    <p class="btn"><input id="middleTx" type="button" class="submit" value="Submit" /><input type="button" class="no" value="Cancenl" /></p>
+                </form>
+            </div>
+        </div>
+        </div>
+        
+       <div class="dialog2 transfer" hidden="true">
+        <div class="dialog-con">
+            <div class="login-con">
+                <h2>Goldpay International</h2>
+                <form  name="myForm2" method="post" action="">
+                    <div><span>Transaction Type</span><input type="text" value="Transfer" readonly/></div>
+                    <div><span>Amount</span><input id="amount2" type="text" placeholder="1000g" /></div>
+                    <div><span>To party</span><input id="party" type="text" placeholder="Other member"/></div>
+                    <div><span>Transaction Fee</span><input id="fee" type="text" value="0% USD" readonly/></div>
+                    <p class="btn"><input id="transferTx" type="button" class="submit" value="Submit" /><input type="button" class="no" value="Cancenl" /></p>
+                </form>
+            </div>
+        </div>
+        </div>
+        
+        
+
+    </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){
+	//$(".dialog2").hide();
+	$(".pop").click(function (){
+		  $('.dialog').show();
+		});
+    $(".no").click(function (){
+          $('.dialog').hide();
+          $('.dialog2').hide();
+        });
+	});
+</script>
+</body>
+</html>
