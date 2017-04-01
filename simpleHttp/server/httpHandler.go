@@ -11,9 +11,8 @@ import (
 )
 
 type response struct{
-	Status bool     `json:"state"`
-	GpCoin int      `json:"gpcoin,omitempty"`
-	USD    int	    `json:"usd,omitempty"`
+	GpCoin string      `json:"gpcoin,omitempty"`
+	USD    string	    `json:"usd,omitempty"`
 }
 
 type User struct{
@@ -21,10 +20,6 @@ type User struct{
 	USD    int
 }
 
-var USERs = map[string]User{
-	"Luke" : User{1000, 100},
-	"Tom"	 : User{123, 456},
-}
 
 
 
@@ -46,7 +41,6 @@ func queryHandler(w http.ResponseWriter, request *http.Request) {
 	}
 
 	res := response{
-		Status : true,
 		GpCoin : USERs[user[0]].GpCoin,
 		USD : USERs[user[0]].USD,
 		}
