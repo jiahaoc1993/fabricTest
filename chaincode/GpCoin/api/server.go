@@ -1,11 +1,12 @@
 package main
 import(
-	"encodeing/json"
+	"encoding/json"
 //	"io"
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
+	//"strconv"
+	"strings"
 	"github.com/gorilla/mux"
 )
 
@@ -100,6 +101,8 @@ func transferHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 func queryHandle(w http.ResponseWriter, req *http.Request) {
+	var r response
+
 	writeHead(w)
 	req.ParseForm()
 	user, found := req.Form["User"]
@@ -112,15 +115,23 @@ func queryHandle(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "failed")
 	}
 
-	amounts := strings.Split(amounts, ",")
 
-	r := response{
-		GpCoin  : amounts[0]
-		USD	: amounts[1]
+	if res == "Null"{
+		r = response{
+                GpCoin  : "0",
+                USD     : "0",
+		}
+	}else{
+
+		amounts := strings.Split(res, ",")
+
+		r = response{
+		GpCoin  : amounts[0],
+		USD	: amounts[1],
+		}
 	}
 
 	b, err := json.Marshal(&r)
-        fmt.Println(b)
         if err == nil{
                 fmt.Fprint(w, string(b))
         }else{
@@ -150,10 +161,10 @@ func main() {
 	router.HandleFunc("/cashout", cashoutHandle).Methods("POST")
 	router.HandleFunc("/transfer", transferHandle).Methods("POST")
 	router.HandleFunc("/query", queryHandle).Methods("POST")
-	router.Handle("/", router)
+	http.Handle("/", router)
 
 
-	err := http.ListenAndServe(":8000", nil)
+	err = http.ListenAndServe(":8000", nil)
 	if err != nil {
 		fmt.Println(err)
 	}

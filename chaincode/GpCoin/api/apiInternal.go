@@ -371,7 +371,7 @@ func CheckUser(chanName string, user string) (res string, err error) {
 
 	resp, err := processTransaction(transaction)
 	//fmt.Println(resp.String())
-	res = resp.String()
+	res = string(resp.Msg)
 	return
 }
 

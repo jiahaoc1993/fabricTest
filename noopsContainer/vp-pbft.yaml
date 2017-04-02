@@ -1,0 +1,13 @@
+vp-pbft:
+ image: hyperledger/fabric-peer
+ environment:
+  - CORE_SECURITY_ENABLED=true
+ expose:
+   - "7050"
+   - "7051"
+   - "7052"
+   - "7053"
+ volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
+ command: sh -c "sleep 10; peer node start"

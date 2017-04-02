@@ -1,0 +1,25 @@
+membersrvc:
+ extends:
+  file: membersrvc.yaml
+  service: membersrvc
+ container_name: membersrvc
+ hostname: membersrvc
+
+vp0:
+ extends:
+  file: vp-pbft.yaml
+  service: vp-pbft
+ container_name: vp0
+ hostname: vp0
+ environment:
+   - CORE_LOGGING_LEVEL=INFO
+   - CORE_PEER_ID=vp0
+   - CORE_PEER_PKI_ECA_PADDR=membersrvc:7054
+   - CORE_PEER_PKI_TCA_PADDR=membersrvc:7054
+   - CORE_PEER_PKI_TLSCA_PADDR=membersrvc:7054
+   - CORE_SECURITY_ENROLLID=test_vp0
+   - CORE_SECURITY_ENROLLSECRET=MwYpmSRjupbT
+ links:
+   - membersrvc
+
+

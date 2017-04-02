@@ -646,9 +646,9 @@ func (t *GPCoinChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	var result string
 
 	if row.GetColumns() != nil {
-		result = fmt.Sprintf("[%x] has %s GpCoins, %s USD", row.Columns[2].GetString_(), row.Columns[0].GetString_(), row.Columns[1].GetString_())
+		result = fmt.Sprintf("%s,%s", row.Columns[0].GetString_(), row.Columns[1].GetString_())
 	}else{
-		result = "No ansawer!"
+		result = "Null"
 	}
 
 	return []byte(result), nil

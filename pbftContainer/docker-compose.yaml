@@ -11,6 +11,10 @@ vp0:
   service: vp-pbft
  container_name: vp0
  hostname: vp0
+ ports:
+   - "8000:8000"
+   - "7050:7050"
+   - "7053:7053"
  environment:
    - CORE_LOGGING_LEVEL=INFO
    - CORE_PEER_ID=vp0
