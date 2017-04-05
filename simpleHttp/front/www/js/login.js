@@ -4,9 +4,9 @@ $(document).ready(function(){
 		var user = $("#user").val()
 		var pass = $("#pass").val()
 		if (user!="" && pass !=""){
-			if (user == "Luke" && pass == "Luke"){
+			if (user == pass){
 				//alert("Welcome come Luke!")
-				location.href = "./index.html?name=Luke"
+				location.href = "./index.html?name=" + user;
 				}else{
 						alert("user name or password wrong")
 					}
@@ -17,7 +17,7 @@ $(document).ready(function(){
 		});
 		
 	$("#Register").click(function(){
-			alert("Register temporary unvaluable")
+			alert("Register temporary unvaluable");
 		});
 		
 });
