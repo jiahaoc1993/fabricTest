@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="css/public.css" >
 <link rel="stylesheet" href="css/index.css" >
 <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="js/broswer.js"></script>
 </head>
 
 <body>
@@ -25,32 +26,27 @@
         </div>
         <div class="clearfix"></div>
         <div class="banner"><img src="images/banner.jpg"></div>
-	<div align="left" class="left">previous block hash:<div id="preblockhash"></div></div>
         <div class="clearfix"></div>
         <div class="query-con">
-            <div class="query-middle">
-                <div class="query-middle-con">
-                    <div class="srcoll-con">
-                	   <dl>
-                            <dt class="number">txid</dt>
-                            <dt class="sender">timestamp</dt>
-                            <dt class="receiver">nano</dt>
-                       	   </dl>
-                       <div class="scrollbar">
-                        <dl>
-                        	<dd class="number">001</dd>
-                            <dd class="sender">2UIITUYTCXXD</dd>
-                            <dd class="receiver">2UIITUYTCXXD</dd>
-                            <dd class="amount">10</dd>
-                       </dl>
-                       </div>
-                    </div>
-                </div>
+        	<div class="query-left">
+            <h2>Block Info</h2>
+            	<ul class="scrollbar">
+                    <li><span id="24BI" class="active">24</span></li>
+                    <li><span id="23BI">23</span></li>
+                    <li><span id="22BI">22</span></li>
+                    <li><span id="21BI">21</span></li>
+                    <li><span id="20BI">20</span></li>
+                    <li><span id="19BI">19</span></li>
+                    <li><span id="18BI">18</span></li>
+                </ul>
             </div>
         </div>
-
+	<div align="left">State Hash:<div id="stateHash">"C7+U20uUQt2h5p41eB4HmEGBaefwy/IhpncLvXZRfiUR74h/Mtn7kKIGH9QUvc3gmH6kJGFKvy+Ox7OG9lAzHg==" </div></div>
+	<div align="left">Previous Block Hash:<div id="PbHash"> "dDd4QFatW41GVXRNEyKmMNUkH2xeKAesluErzkQhBmhQfIkErpIo3Fff50pLS8YNXJ53GAkIdWXGNVzlGmqXIA=="</div></div>
+	<div align="left">Transactions in block:</div>	
+	<div align="left">--TX Id:<div id="txid">0c8748ff8abb69ec668b839d791d932e6d84aba352abbb29ea6a7ea89c5f3e4d891aad6c88bc92ea5102aea51b1df95db26122bc9c7e21ecd77be88e6cfdf626</div></div>
+	<div align="left">--Nonce:<div id="nonce">P2OwxCrzAUurILlxuUDn8NQOxRdRgXFT </div></div>
     </div>
-
 </div>
 </body>
 </html>

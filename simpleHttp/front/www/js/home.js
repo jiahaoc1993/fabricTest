@@ -56,30 +56,31 @@ $(document).ready(function(){
 			transferTx(args)
 			$(".dialog").hide();
 			$(".dialog2").hide();
-	});	
+	});
+
+	$("#blcokInfo").click(function(){
+			window.open("./page.html");		
+	});
+	
 })
 
 function query(user){
-		$.post("http://127.0.0.1:8000/query", {"User": user},
+		$.post("http://54.179.182.63:8888/query", {"User": user},
 			function(result){
-					if (result.state){
 					$("#GPCoin").text(result.gpcoin + " GpCoin");
 					$("#USD").text(result.usd + " USD");
-				}else{
-					alert("not user was offer")
-					}
-		}
+			}
 	);
 }
 
 function middleTx(func, args){
-	$.post("http://127.0.0.1:8000/"+func, args)
+	$.post("http://54.179.182.63:8888/"+func, args)
 	//alert(args.User+func+args.Amount)
 	query(args.User)
 }
 
 function transferTx(args){
-	$.post("http://127.0.0.1:8000/transfer", args)
+	$.post("http://54.179.182.63:8888/transfer", args)
 	//alert(args.From+args.Amount+args.Receiver)
 	query(args.From)
 }
