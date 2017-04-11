@@ -59,7 +59,7 @@ $(document).ready(function(){
 	});
 
 	$("#blcokInfo").click(function(){
-			window.open("./page.html");		
+			window.open("./page2.html");		
 	});
 	
 })
