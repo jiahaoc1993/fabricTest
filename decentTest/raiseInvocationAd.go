@@ -209,11 +209,9 @@ func main() {
 	defer con.Close()
 	client := pb.NewPeerClient(con)
 
-	before := time.Now().UnixNano()
+
 	for i := 0 ; i < numOfTransactions ; i++ {
 		_, _ = client.ProcessTransaction(context.Background(), transactions[i])
 	}
-	after := time.Now().UnixNano()
-	spent := float64(after-before) / 1000000000
 	fmt.Println("send 1000 spent time: ", spent )
 }//main
