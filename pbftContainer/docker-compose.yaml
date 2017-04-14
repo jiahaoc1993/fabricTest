@@ -14,6 +14,7 @@ vp0:
  ports:
    - "8000:8000"
    - "7050:7050"
+   - "7051:7051"
    - "7053:7053"
  environment:
    - CORE_LOGGING_LEVEL=INFO
