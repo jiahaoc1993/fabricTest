@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "G5ms1vMN0xXi5/ZAEytGJIDQzU4=",
+			"path": "fabricTest/decentTest",
+			"revision": "367697476f73d06ded2ffbf1ed4c589c335bef3b",
+			"revisionTime": "2017-04-08T13:38:31Z"
+		},
+		{
 			"checksumSHA1": "QfNyP58Wby5nuvgr37f7vxct75A=",
 			"origin": "github.com/hyperledger/fabric/vendor/github.com/BurntSushi/toml",
 			"path": "github.com/BurntSushi/toml",
@@ -700,5 +706,5 @@
 			"revisionTime": "2016-09-28T15:37:09Z"
 		}
 	],
-	"rootPath": "fabricTest/EvalNode"
+	"rootPath": "fabricTest/decentTest"
 }

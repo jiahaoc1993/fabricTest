@@ -70,33 +70,6 @@ func Sign(tx *pb.Transaction) (*pb.Transaction, error) {
 
 	return tx, nil
 }
-
-func FakeSign(tx *pb.Transaction) (*pb.Transaction, error) {
-	enrollmentCert, privKey, err := loadKey.LoadFakeEnrollment()
-	if err != nil {
-		fmt.Printf("Failed loading enrollment metieral")
-		return nil, err
-	}
-
-	tx.Cert = enrollmentCert.Raw
-
-	rawTx, err := proto.Marshal(tx)
-	if err != nil {
-		fmt.Printf("Failed marshaling tx: %v", err)
-		return nil, err
-	}
-
-	rawSignature, err := primitives.ECDSASign(privKey, rawTx)
-	if err != nil {
-		fmt.Println("Failed Creating signature: %v", err)
-		return nil, err
-	}
-
-	tx.Signature = rawSignature
-
-	return tx, nil
-}
-
 func MakeInvokeTx(chaincodeName string, args []string) *pb.Transaction {
 	chaincodeInvocationSpec, err := transaction.InvokeChaincodeSpec(chaincodeName, args)
 	if err != nil {
@@ -140,27 +113,6 @@ func MakeQueryTx(chaincodeName string, args []string) *pb.Transaction {
 	return tx
 }
 
-func MakeFakeTx(chaincodeName string, args []string) *pb.Transaction {
-	chaincodeInvocationSpec, err := transaction.InvokeChaincodeSpec(chaincodeName, args)
-	if err != nil {
-		os.Exit(0)
-	}
-	//fmt.Println(chaincodeInvocationSpec)
-
-	tx, err := transaction.CreateInvokeTx(chaincodeInvocationSpec, util.GenerateUUID(), nil, chaincodeInvocationSpec.ChaincodeSpec.Attributes...)
-	if err != nil {
-		os.Exit(0)
-	}
-
-	tx, err = FakeSign(tx)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-
-	return tx
-}
-
 
 func WarnningMsg() string{
 //      var err error
@@ -180,12 +132,11 @@ func WarnningMsg() string{
 func main() {
 	var numOfTransactions int
 	var chaincodeName     string
-	var method	      string
-	var timeout           int
-	flag.StringVar(&method, "m", "", "method of Execution")
+	var dest	      string
+
+	flag.StringVar
 	flag.StringVar(&chaincodeName, "n", "", "Name of chaincode returned by the deploy transaction")
 	flag.IntVar(&numOfTransactions, "t", 1, "Number of transaction readly to send(dafault=1)")
-	flag.IntVar(&timeout, "timeout", 0, "fake transaction duration")
 	Init()					//viper init
 	err := initViper.SetConfig()
 	if err != nil {
@@ -199,21 +150,21 @@ func main() {
 	if chaincodeName == "" || method == ""{    //chaincode name must need
 		panic(fmt.Errorf("method of name of chaincode should not be empty"))
 	}
+//start the invoke
+	var res response
+	var stateBefore, stateAfter int
+	var timeBefore, timeAfter float64
 
-	if method == "invoke" {
-		var res response
-		var stateBefore, stateAfter int
-		var timeBefore, timeAfter float64
-
-		for i := 0; i < numOfTransactions; i++ {
-			tx := MakeInvokeTx(chaincodeName,[]string{"a","b","1"})
-			transactions = append(transactions, tx)
-		}
+	for i := 0; i < numOfTransactions; i++ {
+		tx := MakeInvokeTx(chaincodeName,[]string{"a","b","1"})
+		transactions = append(transactions, tx)
+	}
 			//check the current state before taking invocation!
-		query := MakeQueryTx(chaincodeName, []string{"b", "now"})
-		finish  := MakeQueryTx(chaincodeName, []string{"b", "state"})
-		response := rpc.Connect(query,"172.22.28.134:7051")
-		_ = json.Unmarshal(response.Msg, &res)
+	query := MakeQueryTx(chaincodeName, []string{"b", "now"})
+	finish  := MakeQueryTx(chaincodeName, []string{"b", "state"})
+
+	response := rpc.Connect(query,"172.22.28.134:7051")
+	_ = json.Unmarshal(response.Msg, &res)
 		stateBefore, _ = strconv.Atoi(res.Amount)
 		timeBefore , _ = strconv.ParseFloat(res.Time, 64)
 
