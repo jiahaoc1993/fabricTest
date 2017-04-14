@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"github.com/hyperledger/fabric/core/peer"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
 	"github.com/hyperledger/fabric/core/util"
 	pb "github.com/hyperledger/fabric/protos"
+	context "golang.org/x/net/context"
 	"tool/loadKey"
-	"tool/rpc"
+	//"tool/rpc"
 	"tool/initViper"
 	"tool/transaction"
 	"time"
@@ -134,7 +136,7 @@ func main() {
 	var chaincodeName     string
 	var dest	      string
 
-	flag.StringVar
+	flag.StringVar(&dest, "d","","destination")
 	flag.StringVar(&chaincodeName, "n", "", "Name of chaincode returned by the deploy transaction")
 	flag.IntVar(&numOfTransactions, "t", 1, "Number of transaction readly to send(dafault=1)")
 	Init()					//viper init
@@ -147,8 +149,8 @@ func main() {
 
 	flag.Parse()
 
-	if chaincodeName == "" || method == ""{    //chaincode name must need
-		panic(fmt.Errorf("method of name of chaincode should not be empty"))
+	if chaincodeName == ""{    //chaincode name must need
+		panic(fmt.Errorf("name of chaincode should not be empty"))
 	}
 //start the invoke
 	var res response
@@ -163,52 +165,40 @@ func main() {
 	query := MakeQueryTx(chaincodeName, []string{"b", "now"})
 	finish  := MakeQueryTx(chaincodeName, []string{"b", "state"})
 
-	response := rpc.Connect(query,"172.22.28.134:7051")
+	con, _ := peer.NewPeerClientConnectionWithAddress(dest)
+	defer con.Close()
+	client := pb.NewPeerClient(con)
+
+	response,_ := client.ProcessTransaction(context.Background(), query)
 	_ = json.Unmarshal(response.Msg, &res)
 		stateBefore, _ = strconv.Atoi(res.Amount)
 		timeBefore , _ = strconv.ParseFloat(res.Time, 64)
 
 	//	time.Sleep( 2 * time.Second) // time out the batch
 	//	timeBefore = timeBefore + float64(2 * time.Second) // 
-		for _, tx := range transactions {
-			go func () {
-			_ = rpc.Connect(tx, "172.22.28.134:7051")
-			 c <-1
-			}()
-		}
-		for s := 0 ; s < numOfTransactions ; {
-			s += <-c
-		}
-
-		for i :=0; i < 10; i++ {
-			time.Sleep(2 * time.Second)
-			response = rpc.Connect(finish,"172.22.28.134:7051")
-			 _ = json.Unmarshal(response.Msg, &res)
-			stateAfter, _ = strconv.Atoi(res.Amount)
-			if stateAfter == numOfTransactions + stateBefore {
-					timeAfter, _ = strconv.ParseFloat(res.Time, 64)
-					spent := (timeAfter - timeBefore) / float64(time.Second)
-					fmt.Printf("Execute %d transactions spent %.3f seconds\n", numOfTransactions, spent)
-					break
-					}else if i < 9{
-						continue
-					}else {
-						panic(fmt.Errorf("remote server run out of time to response!"))
-					}
-		}
-	}else if method == "query"{
-		//start := time.Now().UnixNano()
-		query := MakeQueryTx(chaincodeName, []string{"b","now"})
-		before := time.Now().UnixNano()
-		response := rpc.Connect(query, "172.22.28.134:7051")
-		//fmt.Println("Status: " + string(response.Status) + "," + "Msg: " + string(response.Msg))
-		//after := time.Now().UnixNano()
-		//spent := float64(after - start) / 1000000000
-		after := time.Now().UnixNano()
-		spent := float64(after-before)/1000000000
-		fmt.Println(response)
-		fmt.Println("Spent time :", spent)
-	}else {
-		panic(fmt.Errorf(WarnningMsg()))
+	for _, tx := range transactions {
+		go func () {
+		_ , _= client.ProcessTransaction(context.Background(), tx)
+			c <-1
+		}()
 	}
+
+	for s := 0 ; s < numOfTransactions ; {
+		s += <-c
+	}
+
+	for i :=0; i < 10; i++ {
+		time.Sleep(2 * time.Second)
+		response,_ = client.ProcessTransaction(context.Background(), finish)
+		_ = json.Unmarshal(response.Msg, &res)
+		stateAfter, _ = strconv.Atoi(res.Amount)
+		if stateAfter == numOfTransactions + stateBefore {
+			timeAfter, _ = strconv.ParseFloat(res.Time, 64)
+			spent := (timeAfter - timeBefore) / float64(time.Second)
+			fmt.Printf("Execute %d transactions spent %.3f seconds\n", numOfTransactions, spent)
+					return
+		}
+	}
+
+	panic(fmt.Errorf("remote server run out of time to response!"))
 }//main
