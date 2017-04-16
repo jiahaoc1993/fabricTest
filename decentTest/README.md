@@ -21,3 +21,6 @@ still have something to fullfill like use flag, add a loop to tell user when wil
 the spent time is longer than from executeOne to execDoneSync because time spent at sending txs will also be caculated!
 
 make conclusion
+
+
+mysql!
