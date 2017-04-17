@@ -54,8 +54,16 @@ func queryLoan(w http.ResponseWriter, req *http.Request) {
 func transferLimits(w http.ResponseWriter, req *http.Request) {
 	writeHead(w)
 	req.ParseForm()
-	amount := req.Form["amount"][0]
-	a, _ := strconv.Atoi(amount)
+	amount, found := req.Form["amount"]
+	if !found {
+		fmt.Fprintf(w,"wrong arguments")
+	}
+
+	if len(amount) == 0{
+		fmt.Fprintf(w,"no values")
+	}
+
+	a, _ := strconv.Atoi(amount[0])
 	limits += a
 	fmt.Fprint(w, "ok")
 }
@@ -63,8 +71,11 @@ func transferLimits(w http.ResponseWriter, req *http.Request) {
 func cashoutLimits(w http.ResponseWriter, req *http.Request) {
 	writeHead(w)
 	req.ParseForm()
-	amount := req.Form["amount"][0]
-	a, _ := strconv.Atoi(amount)
+	amount, found := req.Form["amount"]
+	if !found {
+		fmt.Fprintf(w,"wrong arguments")
+	}
+	a, _ := strconv.Atoi(amount[0])
 	if a > limits {
 		fmt.Fprint(w, "you don't have enough limits")
 	}else{
