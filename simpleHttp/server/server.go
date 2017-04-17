@@ -1,6 +1,6 @@
 package main
 import(
-	"encodeing/json"
+	"encoding/json"
 //	"io"
 	"fmt"
 	"net/http"
@@ -150,7 +150,7 @@ func main() {
 	router.HandleFunc("/cashout", cashoutHandle).Methods("POST")
 	router.HandleFunc("/transfer", transferHandle).Methods("POST")
 	router.HandleFunc("/query", queryHandle).Methods("POST")
-	router.Handle("/", router)
+	http.Handle("/", router) // FUCK!!! who write router here!
 
 
 	err := http.ListenAndServe(":8000", nil)
