@@ -7,8 +7,8 @@ import(
 	"github.com/gorilla/mux"
 )
 
-var limits int = 100
-var loan int = 10
+var limits int = 0
+var loan int = 0
 type response struct{
 	Type  string		`json:"type"`
 	Amount int		`json:"amount"`
@@ -51,15 +51,73 @@ func queryLoan(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func transferLimits(w http.ResponseWriter, req *http.Request) {
+func clearLoan(w http.ResponseWriter, req *http.Request) {
 	w = writeHead(w)
 	req.ParseForm()
+
+
 	amount, found := req.Form["amount"]
 	if !found {
 		fmt.Fprintf(w,"wrong arguments")
 		return
 	}
-	fmt.Println(amount)
+
+	a, _ := strconv.Atoi(amount[0])
+	invest := a/123
+
+	if loan > 0 {
+		switch {
+			case invest > loan:
+				r := response{
+						Type : "ok",
+						Amount : invest-loan,
+				}
+				b, err := json.Marshal(&r)
+				if err == nil {
+					fmt.Fprint(w, string(b))
+				}else{
+					fmt.Fprint(w, err)
+				}
+				loan = 0
+
+			case invest <= loan:
+				r := response{
+						Type : "not",
+						Amount : 0,
+				}
+				b, err := json.Marshal(&r)
+				if err == nil {
+					fmt.Fprint(w, string(b))
+				}else{
+					fmt.Fprint(w, err)
+				}
+				loan -= invest
+		}
+	}else{
+				r := response{
+						Type : "ok",
+						Amount : invest,
+				}
+				b, err := json.Marshal(&r)
+				if err == nil {
+					fmt.Fprint(w, string(b))
+				}else{
+					fmt.Fprint(w, err)
+				}
+	}
+
+
+}
+
+func transferLimits(w http.ResponseWriter, req *http.Request) {
+	w = writeHead(w)
+	req.ParseForm()
+
+	amount, found := req.Form["amount"]
+	if !found {
+		fmt.Fprintf(w,"wrong arguments")
+		return
+	}
 	//if len(amount) == 0{
 	//	fmt.Fprintf(w,"no values")
 	//}
@@ -75,8 +133,10 @@ func cashoutLimits(w http.ResponseWriter, req *http.Request) {
 	amount, found := req.Form["amount"]
 	if !found {
 		fmt.Fprintf(w,"wrong arguments")
+		return
 	}
 	a, _ := strconv.Atoi(amount[0])
+
 	if a > limits {
 		fmt.Fprint(w, "you don't have enough limits")
 	}else{
