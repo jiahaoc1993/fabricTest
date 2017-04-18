@@ -127,7 +127,7 @@ func transferLimits(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(w, "ok")
 }
 
-func cashoutLimits(w http.ResponseWriter, req *http.Request) {
+func withdrawLimits(w http.ResponseWriter, req *http.Request) {
 	w = writeHead(w)
 	req.ParseForm()
 	amount, found := req.Form["amount"]
