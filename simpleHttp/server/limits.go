@@ -41,7 +41,7 @@ func queryLoan(w http.ResponseWriter, req *http.Request) {
 	writeHead(w)
 	r := response{
 		Type: "loan",
-		Amount : limits,
+		Amount : loan,
 	}
 	b, err := json.Marshal(&r)
 	if err == nil {
@@ -113,7 +113,7 @@ func transferLimits(w http.ResponseWriter, req *http.Request) {
 	w = writeHead(w)
 	req.ParseForm()
 
-	amount, found := req.Form["amount"]
+	amount, found := req.Form["Amount"]
 	if !found {
 		fmt.Fprintf(w,"wrong arguments")
 		return
@@ -130,7 +130,7 @@ func transferLimits(w http.ResponseWriter, req *http.Request) {
 func withdrawLimits(w http.ResponseWriter, req *http.Request) {
 	w = writeHead(w)
 	req.ParseForm()
-	amount, found := req.Form["amount"]
+	amount, found := req.Form["Amount"]
 	if !found {
 		fmt.Fprintf(w,"wrong arguments")
 		return
@@ -153,7 +153,7 @@ func main() {
 	router.HandleFunc("/limits", queryLimits).Methods("GET")
 	router.HandleFunc("/loan", queryLoan).Methods("GET")
 	router.HandleFunc("/tLimits", transferLimits).Methods("POST")
-	router.HandleFunc("/coLimits", cashoutLimits).Methods("POST")
+	router.HandleFunc("/wLimits", withdrawLimits).Methods("POST")
 	http.Handle("/", router)
 	err := http.ListenAndServe(":8888", nil)
 	if err != nil {
