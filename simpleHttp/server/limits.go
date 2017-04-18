@@ -56,56 +56,15 @@ func clearLoan(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 
 
-	amount, found := req.Form["amount"]
+	amount, found := req.Form["Amount"]
 	if !found {
 		fmt.Fprintf(w,"wrong arguments")
 		return
 	}
 
 	a, _ := strconv.Atoi(amount[0])
-	invest := a/123
-
-	if loan > 0 {
-		switch {
-			case invest > loan:
-				r := response{
-						Type : "ok",
-						Amount : invest-loan,
-				}
-				b, err := json.Marshal(&r)
-				if err == nil {
-					fmt.Fprint(w, string(b))
-				}else{
-					fmt.Fprint(w, err)
-				}
-				loan = 0
-
-			case invest <= loan:
-				r := response{
-						Type : "not",
-						Amount : 0,
-				}
-				b, err := json.Marshal(&r)
-				if err == nil {
-					fmt.Fprint(w, string(b))
-				}else{
-					fmt.Fprint(w, err)
-				}
-				loan -= invest
-		}
-	}else{
-				r := response{
-						Type : "ok",
-						Amount : invest,
-				}
-				b, err := json.Marshal(&r)
-				if err == nil {
-					fmt.Fprint(w, string(b))
-				}else{
-					fmt.Fprint(w, err)
-				}
-	}
-
+	loan -= a/123
+	fmt.Fprintf(w, []byte{1})
 
 }
 
@@ -154,6 +113,7 @@ func main() {
 	router.HandleFunc("/loan", queryLoan).Methods("GET")
 	router.HandleFunc("/tLimits", transferLimits).Methods("POST")
 	router.HandleFunc("/wLimits", withdrawLimits).Methods("POST")
+	router.HandleFunc("/clear", clearLoan).Methods("POST")
 	http.Handle("/", router)
 	err := http.ListenAndServe(":8888", nil)
 	if err != nil {
