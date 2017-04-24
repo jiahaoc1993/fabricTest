@@ -24,3 +24,5 @@ make conclusion
 
 
 mysql!
+
+should test the ca
