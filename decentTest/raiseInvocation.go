@@ -162,8 +162,8 @@ func main() {
 		transactions = append(transactions, tx)
 	}
 			//check the current state before taking invocation!
-	query := MakeQueryTx(chaincodeName, []string{"b", "now"})
-	finish  := MakeQueryTx(chaincodeName, []string{"b", "state"})
+	query := MakeQueryTx(chaincodeName, []string{"b"})
+	finish  := MakeQueryTx(chaincodeName, []string{"b"})
 
 	con, _ := peer.NewPeerClientConnectionWithAddress(dest)
 	defer con.Close()
@@ -188,7 +188,6 @@ func main() {
 	}
 
 	for i :=0; i < 10; i++ {
-		time.Sleep(2 * time.Second)
 		response,_ = client.ProcessTransaction(context.Background(), finish)
 		_ = json.Unmarshal(response.Msg, &res)
 		stateAfter, _ = strconv.Atoi(res.Amount)
@@ -198,6 +197,7 @@ func main() {
 			fmt.Printf("Execute %d transactions spent %.3f seconds\n", numOfTransactions, spent)
 					return
 		}
+		time.Sleep(1 * time.Second)
 	}
 
 	panic(fmt.Errorf("remote server run out of time to response!"))

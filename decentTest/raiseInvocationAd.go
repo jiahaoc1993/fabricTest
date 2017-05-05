@@ -201,7 +201,7 @@ func main() {
 		transactions = append(transactions, tx)
 	}
 
-	con, err := peer.NewPeerClientConnectionWithAddress("172.22.28.134")
+	con, err := peer.NewPeerClientConnectionWithAddress("10.0.2.15")
 	if err != nil {
 		fmt.Println("Can't not connect: %v", err)
 	}
