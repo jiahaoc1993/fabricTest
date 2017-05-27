@@ -4,3 +4,4 @@ openssl pkcs12 -export -clcerts -in ssl.pem -inkey ssl.key -out ssl.p12
 How to use sdk?
 
 SDK
+building test
